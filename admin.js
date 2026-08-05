@@ -2,13 +2,23 @@
    Loads on every page but does nothing at all unless you've signed in on
    /admin.html. Edits are kept in this browser until you press Export. */
 
-(function () {
+var SESSION_KEY = 'edw-admin-on';
+
+/* content.js announces itself when it has applied any saved overrides. Wait
+   for that rather than relying on script order, which is easy to get wrong. */
+if (localStorage.getItem(SESSION_KEY) === 'yes') {
+  if (window.EDW && window.EDW.ready) {
+    startEditor();
+  } else {
+    document.addEventListener('edw:ready', startEditor, { once: true });
+  }
+}
+
+function startEditor() {
   'use strict';
 
-  var SESSION_KEY = 'edw-admin-on';
-
-  if (localStorage.getItem(SESSION_KEY) !== 'yes') return;
   if (!document.querySelector('main')) return;
+  if (document.querySelector('.edw-bar')) return;
 
   var EDW = window.EDW;
   var draft = EDW.draft() || { text: {}, layout: {}, hidden: {}, order: {} };
@@ -313,4 +323,4 @@
     localStorage.removeItem(SESSION_KEY);
     location.reload();
   });
-})();
+}

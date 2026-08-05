@@ -112,9 +112,15 @@ window.EDW_SAVED = {
     }
   };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { window.EDW.apply(); });
-  } else {
+  function start() {
     window.EDW.apply();
+    window.EDW.ready = true;
+    document.dispatchEvent(new CustomEvent('edw:ready'));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+  } else {
+    start();
   }
 })();
