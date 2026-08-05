@@ -45,6 +45,34 @@ England and Bilbao:
 To change the contact details, edit `WHATSAPP_NUMBER` and `EMAIL_ADDRESS` at the
 top of `script.js`, plus the `wa.me` and `mailto:` links in the HTML.
 
+## Editing the site without touching code
+
+Go to `/admin.html`, sign in (`admin` / `password`), then open any page. A bar
+appears along the bottom with three modes:
+
+- **Text** — click any heading or paragraph and type over it
+- **Photos** — click a photo to change its size, shape, and which part of it shows
+- **Sections** — move whole blocks up and down, or hide them
+
+Changes are saved in that browser straight away, but **they are only live for
+that one person** until they're published. To publish them:
+
+1. Press **Export** in the editing bar — this downloads a `content.js`
+2. Replace the `content.js` in this folder with the downloaded one
+3. Commit and push
+
+`content.js` holds nothing but the overrides, so the original wording stays in
+the HTML and can always be recovered by emptying that file.
+
+### About the password
+
+It is checked in the browser, so anyone who views the page source can read it.
+It keeps a passer-by out of the editor; it is not real security, and there is
+nothing behind it that could be damaged permanently — the worst case is someone
+exporting a file nobody commits. Treat `/admin.html` as a convenience, and take
+it out when it's no longer needed by deleting `admin.html`, `admin.js`,
+`admin.css` and the two `<script>`/`<link>` lines that reference them.
+
 ## Publishing
 
 Currently on **GitHub Pages**, served from `main` at the repository root. Any
