@@ -50,6 +50,7 @@
   var whatsappLink = document.getElementById('send-whatsapp');
   var emailLink = document.getElementById('send-email');
   var gmailLink = document.getElementById('send-gmail');
+  var outlookLink = document.getElementById('send-outlook');
   var copyButton = document.getElementById('copy-message');
 
   function value(id) {
@@ -169,11 +170,20 @@
       '?subject=' + encodeURIComponent(subjectLine) +
       '&body=' + encodeURIComponent(message);
 
-    /* ...so offer Gmail's web compose as a way round that. */
+    /* ...so offer the two big webmail compose windows as a way round it. For
+       anything else there's always copy-and-paste, which needs no integration
+       at all. */
     if (gmailLink) {
       gmailLink.href = 'https://mail.google.com/mail/?view=cm&fs=1' +
         '&to=' + encodeURIComponent(EMAIL_ADDRESS) +
         '&su=' + encodeURIComponent(subjectLine) +
+        '&body=' + encodeURIComponent(message);
+    }
+
+    if (outlookLink) {
+      outlookLink.href = 'https://outlook.live.com/mail/0/deeplink/compose' +
+        '?to=' + encodeURIComponent(EMAIL_ADDRESS) +
+        '&subject=' + encodeURIComponent(subjectLine) +
         '&body=' + encodeURIComponent(message);
     }
 
