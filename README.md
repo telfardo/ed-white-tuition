@@ -10,8 +10,9 @@ browser to preview it locally.
 | File | What it is |
 | --- | --- |
 | `index.html` | Landing page — all about booking. Form sits in the hero, where the old slogan was. |
-| `about.html` | Ed's full bio in his own words — music, then physics/maths/philosophy. |
-| `playing.html` | The violin page — on stage, the six-year-old, the seventy-five-year-old. |
+| `music.html` | Music skills — violin, drums &amp; percussion, theory, on stage, students. |
+| `academic.html` | Academic info — physics, maths, philosophy, and how those lessons run. |
+| `about.html` | Ed's full bio in his own words. |
 | `gallery.html` | Photo grid: gigs, the teaching room, lessons. |
 | `styles.css` | All styling. Colours and fonts are variables at the top of the file. |
 | `script.js` | Builds the WhatsApp message from the form and shows it for review. |
@@ -26,13 +27,23 @@ never falls apart mid-edit.
 
 ## The booking form
 
-It doesn't need a backend. Filling it in writes a tidy message, shows it to the
-sender for review, then opens WhatsApp to `447710241930` with the text ready to
-go — same approach as the old site, so nothing changes at Ed's end. There's also
-a "copy message" button for anyone who'd rather paste it elsewhere.
+No backend. Filling it in writes a tidy message, shows it for review, then
+offers three ways out: **email** to `edchriswhite@gmail.com`, **WhatsApp** to
+`447710241930`, or copy-to-clipboard.
 
-To change the number, edit `WHATSAPP_NUMBER` at the top of `script.js` and the
-`wa.me` links in both HTML files.
+The WhatsApp link deliberately opens in the *same* tab. Opening `wa.me` in a new
+tab breaks the handoff to the WhatsApp app on iOS and dumps people on the App
+Store download page instead — that was the original bug.
+
+`Where?` behaves differently depending on the answer, because Ed moves between
+England and Bilbao:
+
+- **Online** → asks for a city/timezone, pre-filled from the browser
+- **In person** → asks where they're based, and explains the England/Bilbao split
+- **Either** → asks both
+
+To change the contact details, edit `WHATSAPP_NUMBER` and `EMAIL_ADDRESS` at the
+top of `script.js`, plus the `wa.me` and `mailto:` links in the HTML.
 
 ## Publishing
 
