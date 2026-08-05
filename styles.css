@@ -346,6 +346,11 @@ select {
   line-height: 1.5;
   color: var(--ink-faint);
 }
+.preview-hint + .preview-hint {
+  margin-top: 0.55rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--line);
+}
 
 /* Fields that only appear once a relevant option is chosen. */
 

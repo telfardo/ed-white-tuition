@@ -49,6 +49,7 @@
   var previewText = document.getElementById('preview-text');
   var whatsappLink = document.getElementById('send-whatsapp');
   var emailLink = document.getElementById('send-email');
+  var gmailLink = document.getElementById('send-gmail');
   var copyButton = document.getElementById('copy-message');
 
   function value(id) {
@@ -162,9 +163,19 @@
        WhatsApp app on iOS, which is what lands people on the download page. */
     whatsappLink.href = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(message);
 
+    /* mailto: hands over to whatever the device has registered as its mail
+       handler, which isn't always where the person actually reads mail. */
     emailLink.href = 'mailto:' + EMAIL_ADDRESS +
       '?subject=' + encodeURIComponent(subjectLine) +
       '&body=' + encodeURIComponent(message);
+
+    /* ...so offer Gmail's web compose as a way round that. */
+    if (gmailLink) {
+      gmailLink.href = 'https://mail.google.com/mail/?view=cm&fs=1' +
+        '&to=' + encodeURIComponent(EMAIL_ADDRESS) +
+        '&su=' + encodeURIComponent(subjectLine) +
+        '&body=' + encodeURIComponent(message);
+    }
 
     preview.hidden = false;
     copyButton.textContent = 'Copy the message instead';
