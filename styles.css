@@ -148,7 +148,7 @@ img { max-width: 100%; display: block; }
   background: var(--paper-warm);
   aspect-ratio: 1 / 1;
 }
-.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 52%; }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
 
 .facts {
   list-style: none;
@@ -611,7 +611,7 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--paper-warm);
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 4;
   margin-bottom: 1.25rem;
 }
 .prose-aside .photo img { width: 100%; height: 100%; object-fit: cover; }
