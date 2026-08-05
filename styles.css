@@ -141,6 +141,29 @@ img { max-width: 100%; display: block; }
 
 .hero h1 { margin-bottom: 0.65rem; }
 
+/* Small portrait sitting beside the page title — deliberately modest, and
+   square, so there's no crop to go wrong on any screen. */
+
+.hero-intro {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.hero-intro .portrait {
+  flex: none;
+  width: 132px;
+  aspect-ratio: 1;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--paper-warm);
+}
+.hero-intro .portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center 18%; }
+
+.hero-intro .eyebrow { margin-bottom: 0.5rem; }
+.hero-intro h1 { margin-bottom: 0; }
+
 .hero-photo {
   margin: 2rem 0 0;
   border-radius: var(--radius);
@@ -275,6 +298,9 @@ select {
 .btn-primary { background: var(--accent); color: #fff; width: 100%; }
 .btn-primary:hover { background: #86462b; color: #fff; }
 
+.btn-dark { background: var(--ink); color: var(--paper); }
+.btn-dark:hover { background: #3c3733; color: var(--paper); }
+
 .btn-ghost {
   background: transparent;
   color: var(--ink);
@@ -310,8 +336,36 @@ select {
   word-wrap: break-word;
 }
 .preview-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
-.preview-actions .btn { flex: 1; min-width: 150px; padding-block: 0.6rem; font-size: 0.94rem; }
+.preview-actions .btn { flex: 1; min-width: 148px; padding-block: 0.6rem; font-size: 0.94rem; }
 .preview-actions .btn-primary { width: auto; }
+.preview-actions .btn-ghost { flex-basis: 100%; }
+
+.preview-hint {
+  margin: 0.9rem 0 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+/* Fields that only appear once a relevant option is chosen. */
+
+.field-reveal {
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.9rem 1rem 1rem;
+  margin-top: -0.2rem;
+}
+.field-reveal[hidden] { display: none; }
+.field-reveal .field:last-child { margin-bottom: 0; }
+.field-reveal input { background: var(--card); }
+
+.reveal-note {
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 0 0 0.85rem;
+}
 
 /* ---------- sections ---------- */
 
@@ -694,6 +748,9 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
   .about-photo { max-width: 380px; }
 
   .hero-photo { aspect-ratio: 16 / 10; }
+
+  .hero-intro { gap: 1rem; }
+  .hero-intro .portrait { width: 92px; border-radius: 12px; }
 
   .nav { gap: 1.1rem; font-size: 0.92rem; }
 }

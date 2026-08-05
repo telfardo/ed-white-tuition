@@ -1,6 +1,8 @@
 /* Ed White Tuition
-   - Builds a WhatsApp message from the booking form and shows it for review
-     before anything is sent.
+   - Builds a booking message from the form and shows it for review, then
+     offers to send it by email or WhatsApp. Nothing sends on its own.
+   - Reveals a different follow-up question depending on whether the lesson is
+     online or in person, since Ed moves between England and Bilbao.
    - Marks photo slots as empty when the image file isn't there yet, so the
      layout stays intact instead of showing a broken image. */
 
@@ -8,6 +10,7 @@
   'use strict';
 
   var WHATSAPP_NUMBER = '447710241930';
+  var EMAIL_ADDRESS = 'edchriswhite@gmail.com';
 
   /* ---- photo placeholders ---- */
 
@@ -45,12 +48,57 @@
   var preview = document.getElementById('preview');
   var previewText = document.getElementById('preview-text');
   var whatsappLink = document.getElementById('send-whatsapp');
+  var emailLink = document.getElementById('send-email');
   var copyButton = document.getElementById('copy-message');
 
   function value(id) {
     var el = document.getElementById(id);
     return el ? el.value.trim() : '';
   }
+
+  /* ---- online vs in person ----
+     Ed is in England some of the year and Bilbao the rest, so "where" needs a
+     different follow-up each way: a timezone if you're online, a location if
+     you want to sit in the same room. */
+
+  var revealOnline = document.getElementById('reveal-online');
+  var revealPerson = document.getElementById('reveal-person');
+  var timezoneField = document.getElementById('timezone');
+
+  function currentWhere() {
+    var picked = document.querySelector('input[name="where"]:checked');
+    return picked ? picked.id : 'w-online';
+  }
+
+  function syncReveals() {
+    var where = currentWhere();
+    revealOnline.hidden = (where === 'w-person');
+    revealPerson.hidden = (where === 'w-online');
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="where"]'), function (radio) {
+    radio.addEventListener('change', syncReveals);
+  });
+  syncReveals();
+
+  /* Pre-fill the timezone so nobody has to think about it. It's only a hint —
+     the field stays editable. */
+  (function prefillTimezone() {
+    if (!timezoneField) return;
+    var zone = '';
+    try {
+      zone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    } catch (e) { /* older browser: leave it blank */ }
+
+    if (zone) {
+      var offset = -new Date().getTimezoneOffset() / 60;
+      var sign = offset >= 0 ? '+' : '−';
+      timezoneField.value = zone.replace(/_/g, ' ') + ' (UTC' + sign + Math.abs(offset) + ')';
+    }
+    timezoneField.placeholder = 'e.g. Madrid, or GMT+1';
+  })();
+
+  /* ---- message ---- */
 
   function checkedSubjects() {
     return Array.prototype.slice
@@ -62,6 +110,7 @@
     var name = value('name');
     var student = value('student');
     var subjects = checkedSubjects();
+    var where = document.querySelector('input[name="where"]:checked');
     var lines = [];
 
     lines.push('Hi Ed — I’d like to book a lesson.');
@@ -75,9 +124,10 @@
     lines.push('Subject: ' + (subjects.length ? subjects.join(', ') : '(not chosen yet)'));
     lines.push('Level: ' + value('level'));
     lines.push('Lesson length: ' + value('length'));
-
-    var where = document.querySelector('input[name="where"]:checked');
     lines.push('Where: ' + (where ? where.value : 'Not specified'));
+
+    if (!revealOnline.hidden && value('timezone')) lines.push('I’m in: ' + value('timezone'));
+    if (!revealPerson.hidden && value('based')) lines.push('Based in: ' + value('based'));
 
     if (value('when')) lines.push('Best times: ' + value('when'));
     if (value('notes')) {
@@ -103,11 +153,21 @@
     nameField.removeAttribute('aria-invalid');
 
     var message = buildMessage();
+    var subjects = checkedSubjects();
+    var subjectLine = 'Lesson enquiry' + (subjects.length ? ' — ' + subjects.join(', ') : '');
 
     previewText.textContent = message;
+
+    /* wa.me in the SAME tab. Opening it in a new tab breaks the handoff to the
+       WhatsApp app on iOS, which is what lands people on the download page. */
     whatsappLink.href = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(message);
+
+    emailLink.href = 'mailto:' + EMAIL_ADDRESS +
+      '?subject=' + encodeURIComponent(subjectLine) +
+      '&body=' + encodeURIComponent(message);
+
     preview.hidden = false;
-    copyButton.textContent = 'Copy message';
+    copyButton.textContent = 'Copy the message instead';
 
     preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
@@ -117,7 +177,7 @@
 
     function done() {
       copyButton.textContent = 'Copied';
-      setTimeout(function () { copyButton.textContent = 'Copy message'; }, 2000);
+      setTimeout(function () { copyButton.textContent = 'Copy the message instead'; }, 2000);
     }
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
