@@ -1,5 +1,7 @@
 # Ed White Tuition
 
+Live: **https://telfardo.github.io/ed-white-tuition/**
+
 A plain static site — no build step, no dependencies. Open `index.html` in a
 browser to preview it locally.
 
@@ -7,7 +9,7 @@ browser to preview it locally.
 
 | File | What it is |
 | --- | --- |
-| `index.html` | Home page. Booking form sits in the hero, where the old slogan was. |
+| `index.html` | Landing page — all about booking. Form sits in the hero, where the old slogan was. |
 | `about.html` | Ed's full bio in his own words — music, then physics/maths/philosophy. |
 | `playing.html` | The violin page — on stage, the six-year-old, the seventy-five-year-old. |
 | `gallery.html` | Photo grid: gigs, the teaching room, lessons. |
@@ -34,9 +36,19 @@ To change the number, edit `WHATSAPP_NUMBER` at the top of `script.js` and the
 
 ## Publishing
 
-Drag this folder onto [app.netlify.com/drop](https://app.netlify.com/drop), or
-point the existing Netlify site at it — no build command, publish directory is
-the folder root.
+Currently on **GitHub Pages**, served from `main` at the repository root. Any
+push to `main` redeploys it within a minute or two:
+
+```
+git add -A
+git commit -m "Update copy"
+git push
+```
+
+`.nojekyll` is there to stop GitHub running the files through Jekyll.
+
+Alternatively, drag this folder onto [app.netlify.com/drop](https://app.netlify.com/drop)
+— no build command, publish directory is the folder root.
 
 ## Tweaking the look
 
