@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book a Lesson — Ed White Tuition, Edinburgh</title>
+<meta name="description" content="Book violin, drum kit, percussion or music theory lessons with Ed White, or physics, maths and philosophy tuition. Online and in person in Edinburgh. All ages and learning styles.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="index.html">Ed White <span>· Tuition</span></a>
+    <nav class="nav">
+      <a href="#subjects-list">Subjects</a>
+      <a href="#how">How it works</a>
+      <a href="about.html">About</a>
+      <a href="playing.html">Playing</a>
+      <a href="gallery.html">Gallery</a>
+      <a class="btn-sm" href="#book">Book</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- Hero: booking form sits where the old slogan used to be -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+
+      <div>
+        <p class="eyebrow">Edinburgh · online &amp; in person</p>
+        <h1>Book a lesson with Ed</h1>
+        <p class="lede">
+          Violin, drum kit, percussion and music theory. Physics, maths and philosophy.
+          Fill in the form and Ed will come back to you himself.
+        </p>
+
+        <ul class="facts">
+          <li>30, 45 or 60 minutes — or however long suits you</li>
+          <li>All ages, from six to ninety-six</li>
+          <li>Complete beginners and returning players welcome</li>
+          <li>Grades, orchestra parts, ear training, or just for the love of it</li>
+          <li>Experienced with all learning styles, including neurodivergent learners</li>
+        </ul>
+
+        <div class="hero-photo photo" data-placeholder="Add images/ed-studio.jpg — Ed smiling with his violin">
+          <img src="images/ed-studio.jpg" alt="Ed White smiling, holding his violin in his teaching room" loading="eager" onerror="this.parentNode.classList.add('is-empty')">
+        </div>
+      </div>
+
+      <!-- Booking form -->
+      <div class="booking" id="book">
+        <h2>Book a lesson</h2>
+        <p class="form-note">Fill this in and it'll write the message for you — you'll see it before anything is sent.</p>
+
+        <form id="booking-form" novalidate>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="name">Your name</label>
+              <input type="text" id="name" name="name" autocomplete="name" required>
+            </div>
+            <div class="field">
+              <label for="student">Who's it for? <span class="opt">(and age)</span></label>
+              <input type="text" id="student" name="student" placeholder="Me · or “Ella, 8”">
+            </div>
+          </div>
+
+          <div class="field">
+            <label>What would you like to learn?</label>
+            <div class="chips" id="subjects">
+              <input type="checkbox" id="s-violin" value="Violin"><label for="s-violin">Violin</label>
+              <input type="checkbox" id="s-drums" value="Drum kit"><label for="s-drums">Drum kit</label>
+              <input type="checkbox" id="s-perc" value="Percussion"><label for="s-perc">Percussion</label>
+              <input type="checkbox" id="s-theory" value="Music theory"><label for="s-theory">Music theory</label>
+              <input type="checkbox" id="s-physics" value="Physics"><label for="s-physics">Physics</label>
+              <input type="checkbox" id="s-maths" value="Maths"><label for="s-maths">Maths</label>
+              <input type="checkbox" id="s-phil" value="Philosophy"><label for="s-phil">Philosophy</label>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="level">Current level</label>
+              <select id="level" name="level">
+                <option>Complete beginner</option>
+                <option>A little experience</option>
+                <option>Returning after a break</option>
+                <option>Intermediate</option>
+                <option>Advanced</option>
+                <option>Working towards a grade or exam</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="length">Lesson length</label>
+              <select id="length" name="length">
+                <option>30 minutes</option>
+                <option selected>45 minutes</option>
+                <option>60 minutes</option>
+                <option>Not sure — advise me</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Where?</label>
+            <div class="chips" id="where">
+              <input type="radio" name="where" id="w-person" value="In person in Edinburgh" checked><label for="w-person">In person in Edinburgh</label>
+              <input type="radio" name="where" id="w-online" value="Online"><label for="w-online">Online</label>
+              <input type="radio" name="where" id="w-either" value="Either works"><label for="w-either">Either</label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="when">When suits you? <span class="opt">(optional)</span></label>
+            <input type="text" id="when" name="when" placeholder="Weekday evenings, Saturday mornings…">
+          </div>
+
+          <div class="field">
+            <label for="notes">Anything Ed should know? <span class="opt">(optional)</span></label>
+            <textarea id="notes" name="notes" placeholder="Goals, access needs, a style you'd love to play…"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Write my message</button>
+          <p class="form-foot">Nothing is sent until you press send yourself.</p>
+        </form>
+
+        <div class="preview" id="preview" hidden>
+          <h3>Your message</h3>
+          <pre id="preview-text"></pre>
+          <div class="preview-actions">
+            <a class="btn btn-primary" id="send-whatsapp" href="#" target="_blank" rel="noopener">Send on WhatsApp</a>
+            <button type="button" class="btn btn-ghost" id="copy-message">Copy message</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- What you can book -->
+  <section id="subjects-list" class="section-alt">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">What you can book</p>
+        <h2>Seven subjects, one teacher</h2>
+        <p class="lede">Pick one and it'll be ticked on the booking form for you.</p>
+      </div>
+
+      <div class="cards">
+        <button type="button" class="card card-pick" data-subject="s-violin">
+          <span class="tag">Music</span>
+          <h3>Violin</h3>
+          <p>Over twenty years of playing, ten of them in orchestras. Grades, orchestra parts, ear training, improvisation — or simply the tunes you've always wanted to play.</p>
+          <span class="pick-cue">Book violin lessons →</span>
+        </button>
+
+        <button type="button" class="card card-pick" data-subject="s-drums">
+          <span class="tag">Music</span>
+          <h3>Drum kit</h3>
+          <p>Fifteen years behind the kit. Groove, coordination and confidence, with a real soft spot for beginners who're convinced they have no rhythm.</p>
+          <span class="pick-cue">Book drum lessons →</span>
+        </button>
+
+        <button type="button" class="card card-pick" data-subject="s-perc">
+          <span class="tag">Music</span>
+          <h3>Percussion</h3>
+          <p>Rhythm, ensemble skills and feel, drawing on time with the Brighton Percussion Ensemble. The parts that make a group lock together.</p>
+          <span class="pick-cue">Book percussion lessons →</span>
+        </button>
+
+        <button type="button" class="card card-pick" data-subject="s-theory">
+          <span class="tag">Music</span>
+          <h3>Music theory</h3>
+          <p>The reading, writing and why-does-that-work side of things — taught alongside your instrument, or on its own if that's what you need.</p>
+          <span class="pick-cue">Book theory lessons →</span>
+        </button>
+
+        <button type="button" class="card card-pick" data-subject="s-physics">
+          <span class="tag academic">Academic</span>
+          <h3>Physics</h3>
+          <p>Studied at Bristol and tutored for five years. A highly visual way of presenting material — once the picture makes sense, the problems stop being frightening.</p>
+          <span class="pick-cue">Book physics tuition →</span>
+        </button>
+
+        <button type="button" class="card card-pick" data-subject="s-maths">
+          <span class="tag academic">Academic</span>
+          <h3>Maths</h3>
+          <p>Foundations right through to undergraduate level. Rebuilding confidence in the basics is often where the real progress hides.</p>
+          <span class="pick-cue">Book maths tuition →</span>
+        </button>
+
+        <button type="button" class="card card-pick" data-subject="s-phil">
+          <span class="tag academic">Academic</span>
+          <h3>Philosophy</h3>
+          <p>Also read at Bristol. Arguments, analysis and writing: how to read a text closely, spot the move being made, and answer the question that was actually asked.</p>
+          <span class="pick-cue">Book philosophy tuition →</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- How booking works -->
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">How it works</p>
+        <h2>Three steps, no fuss</h2>
+      </div>
+
+      <ol class="steps">
+        <li>
+          <h3>Fill in the form</h3>
+          <p>Takes about a minute. It writes a tidy message for you and shows it to you first — nothing is sent until you press send.</p>
+        </li>
+        <li>
+          <h3>Ed replies</h3>
+          <p>Straight from him, not an assistant or a booking system. He'll suggest a time and confirm what to bring.</p>
+        </li>
+        <li>
+          <h3>Have your first lesson</h3>
+          <p>No contract, no term commitment. Come once and see how you get on.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- The practical detail -->
+  <section class="section-alt">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">The practical bits</p>
+        <h2>Before you book</h2>
+      </div>
+
+      <div class="detail-rows">
+        <div>
+          <h3>Lesson length</h3>
+          <p>30, 45 or 60 minutes. Lessons can be however long you want them to be — say so on the form and Ed will advise.</p>
+        </div>
+        <div>
+          <h3>Where</h3>
+          <p>In person in Edinburgh, or online. Both work well; online suits academic tuition particularly.</p>
+        </div>
+        <div>
+          <h3>Who it's for</h3>
+          <p>Children, teenagers, adults and retirees. Ed's youngest student is six and his oldest is seventy-five.</p>
+        </div>
+        <div>
+          <h3>No instrument yet?</h3>
+          <p>Not a problem — mention it on the form and Ed will point you towards something sensible to hire or buy.</p>
+        </div>
+        <div>
+          <h3>Access needs</h3>
+          <p>Ed teaches all ages and learning styles, including neurodivergent learners. Tell him what helps and he'll build the lesson around it.</p>
+        </div>
+        <div>
+          <h3>Questions first?</h3>
+          <p>Perfectly normal. Message him on <a href="https://wa.me/447710241930" target="_blank" rel="noopener">WhatsApp</a> and ask before booking anything.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Who you'll be learning with -->
+  <section>
+    <div class="wrap about-grid">
+
+      <div class="about-photo photo" data-placeholder="Add images/ed-performing.jpg — Ed playing violin on stage">
+        <img src="images/ed-performing.jpg" alt="Ed White playing the violin on stage" loading="lazy" onerror="this.parentNode.classList.add('is-empty')">
+      </div>
+
+      <div>
+        <p class="eyebrow">Who you'll be learning with</p>
+        <h2>A teacher who still plays</h2>
+        <p>
+          Ed studied Physics and Philosophy at Bristol University. He's played the violin for over
+          twenty years — taught by the lead violinist of the award-winning Liverpool Philharmonic —
+          and the drums for fifteen. Ten years in orchestras took him on tour around Europe.
+        </p>
+        <p>
+          He now curates world music concerts as a solo artist and co-leads a jazz group in
+          Edinburgh, with five years of tutoring behind the lessons.
+        </p>
+        <p class="quote">Learning happens fastest when you're actively enjoying what you're doing.</p>
+        <p style="margin-top:1.5rem">
+          <a href="about.html">Read more in Ed's own words →</a> ·
+          <a href="playing.html">See him teach →</a>
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Closing CTA -->
+  <section class="section-alt">
+    <div class="wrap cta-band">
+      <p class="eyebrow">Ready when you are</p>
+      <h2>Book your first lesson</h2>
+      <p class="lede">One minute to fill in, no commitment, and a reply straight from Ed.</p>
+      <a class="btn btn-primary" href="#book">Go to the booking form</a>
+
+      <div class="contact-strip">
+        <a href="https://wa.me/447710241930" target="_blank" rel="noopener">WhatsApp</a>
+        <a href="https://instagram.com/edwhitemusician" target="_blank" rel="noopener">@edwhitemusician</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>Ed White · Music &amp; academic tuition · Edinburgh</p>
+    <p><a href="about.html">About</a> · <a href="playing.html">Playing</a> · <a href="gallery.html">Gallery</a> · <a href="#book">Book</a></p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
