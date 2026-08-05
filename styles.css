@@ -146,9 +146,9 @@ img { max-width: 100%; display: block; }
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--paper-warm);
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
 }
-.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 52%; }
 
 .facts {
   list-style: none;
@@ -535,6 +535,43 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 .gallery .wide { grid-column: span 2; }
 .gallery .wide .photo { aspect-ratio: 3 / 2; }
 
+/* square source images sit better without a tall crop */
+.gallery .square .photo { aspect-ratio: 1 / 1; }
+
+/* ---------- student note cards (stand-ins until lesson photos exist) ---------- */
+
+.note-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem;
+}
+
+.note-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 2rem 1.8rem;
+}
+
+.note-card .age {
+  display: block;
+  font-family: var(--serif);
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--accent);
+  margin-bottom: 0.85rem;
+}
+
+.note-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.6rem;
+}
+
+.note-card p {
+  font-size: 0.97rem;
+  color: var(--ink-soft);
+}
+
 .gallery figcaption {
   margin-top: 0.7rem;
   font-size: 0.88rem;
@@ -574,7 +611,7 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--paper-warm);
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1 / 1;
   margin-bottom: 1.25rem;
 }
 .prose-aside .photo img { width: 100%; height: 100%; object-fit: cover; }
@@ -649,7 +686,8 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
   .prose-aside { position: static; }
   .prose-aside .photo { max-width: 340px; }
   .gallery .wide { grid-column: span 1; }
-  .gallery .wide .photo { aspect-ratio: 3 / 4; }
+  .gallery .wide .photo { aspect-ratio: 3 / 2; }
+  .note-cards { grid-template-columns: 1fr; }
 
   .story.flip .story-text { order: 0; }
 
