@@ -734,6 +734,20 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 .site-foot a { color: var(--ink-soft); text-decoration: none; }
 .site-foot a:hover { color: var(--accent); }
 
+.site-foot .wrap > p { margin-bottom: 0; }
+
+.site-foot .credit {
+  flex: 0 0 100%;
+  margin-top: 1rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.65rem;
+  letter-spacing: 0.02em;
+  text-align: right;
+  opacity: 0.75;
+}
+.site-foot .credit .me { font-weight: 600; color: var(--ink-soft); }
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 860px) {
