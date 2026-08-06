@@ -309,7 +309,7 @@ function startEditor() {
         a.click();
         a.remove();
 
-        status.textContent = 'Exported — send content.js to whoever runs the site';
+        status.textContent = 'Exported — send content.js to the one and only Ned Telfer';
       });
   });
 
