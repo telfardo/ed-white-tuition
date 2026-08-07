@@ -719,7 +719,6 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
   text-align: right;
   opacity: 0.75;
 }
-.site-foot .credit .me { font-weight: 600; color: var(--ink-soft); }
 
 /* ---------- responsive ---------- */
 
@@ -731,6 +730,10 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 
   .prose-aside { position: static; }
   .prose-aside .photo { max-width: 340px; }
+
+  /* Once the sidebar stacks it stops being a glanceable margin note and
+     turns into a long list between the photo and the prose. */
+  .credentials { display: none; }
   .gallery .wide { grid-column: span 1; }
   .gallery .wide .photo { aspect-ratio: 3 / 2; }
   .note-cards { grid-template-columns: 1fr; }
