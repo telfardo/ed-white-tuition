@@ -29,22 +29,6 @@
   var form = document.getElementById('booking-form');
   if (!form) return;
 
-  /* Subject cards tick the matching box on the form and jump to it. */
-  Array.prototype.forEach.call(document.querySelectorAll('.card-pick'), function (card) {
-    card.addEventListener('click', function () {
-      var box = document.getElementById(card.getAttribute('data-subject'));
-      if (box) box.checked = true;
-
-      document.getElementById('book').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      var nameField = document.getElementById('name');
-      if (nameField && !nameField.value.trim()) {
-        // Wait for the smooth scroll before stealing focus, or the browser jumps.
-        setTimeout(function () { nameField.focus({ preventScroll: true }); }, 600);
-      }
-    });
-  });
-
   var preview = document.getElementById('preview');
   var previewText = document.getElementById('preview-text');
   var whatsappLink = document.getElementById('send-whatsapp');
