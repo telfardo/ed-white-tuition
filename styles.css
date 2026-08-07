@@ -494,33 +494,6 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 
 /* ---------- pickable subject cards ---------- */
 
-.card-pick {
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.card-pick:hover,
-.card-pick:focus-visible {
-  border-color: var(--accent-dim);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(34, 32, 29, 0.06);
-  outline: none;
-}
-
-.card-pick .pick-cue {
-  margin-top: auto;
-  padding-top: 1rem;
-  font-size: 0.87rem;
-  font-weight: 500;
-  color: var(--accent);
-}
-.card-pick:hover .pick-cue { text-decoration: underline; text-underline-offset: 3px; }
-
 /* ---------- how it works ---------- */
 
 .steps {
