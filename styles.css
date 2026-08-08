@@ -740,26 +740,35 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
   padding-bottom: 3px;
   transition: background-size 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
 }
-.site-foot .credit a::after {
-  content: "";
-  /* An empty flex item has no baseline to sit on, so centre it instead. */
+/* The Telfardo mark. Sits in Ed's palette at rest and only picks up the
+   brand yellow on deliberate hover. */
+.site-foot .credit .mark {
   align-self: center;
-  width: 4px;
-  height: 4px;
-  background: var(--accent);
-  transform: rotate(45deg);
-  opacity: 0.5;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  display: inline-grid;
+  place-items: center;
+  width: 1.15em;
+  height: 1.15em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 30%;
+  background: var(--line);
+  color: var(--ink-faint);
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .site-foot .credit a:hover .me { background-size: 100% 1px; color: var(--accent); }
 .site-foot .credit a:hover .by { color: var(--ink-soft); }
-.site-foot .credit a:hover::after { transform: rotate(135deg); opacity: 1; }
+.site-foot .credit a:hover .mark {
+  background: #ffe14d;
+  color: #1c1b19;
+  transform: scale(1.1);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .site-foot .credit .me,
   .site-foot .credit .by,
-  .site-foot .credit a::after { transition: none; }
+  .site-foot .credit .mark { transition: none; }
 }
 
 /* ---------- responsive ---------- */
