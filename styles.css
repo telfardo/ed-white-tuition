@@ -723,11 +723,11 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
   gap: 0.6em;
 }
 .site-foot .credit .by {
-  font-size: 0.58rem;
-  font-weight: 500;
+  font-size: 0.62rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: var(--ink-faint);
+  color: var(--ink-soft);
   transition: color 0.3s ease;
 }
 .site-foot .credit .me {
@@ -735,13 +735,9 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
   font-size: 0.82rem;
   letter-spacing: -0.01em;
   color: var(--ink-soft);
-  /* Underline drawn as a background so it can sweep in on hover. */
-  background: linear-gradient(var(--accent), var(--accent)) 0 100% / 0 1px no-repeat;
-  padding-bottom: 3px;
-  transition: background-size 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s ease;
+  transition: color 0.3s ease;
 }
-.site-foot .credit a:hover .me { background-size: 100% 1px; color: var(--accent); }
-.site-foot .credit a:hover .by { color: var(--ink-soft); }
+.site-foot .credit a:hover .by { color: var(--ink); }
 
 @media (prefers-reduced-motion: reduce) {
   .site-foot .credit .me,
@@ -788,4 +784,102 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   * { transition: none !important; }
+}
+
+/* ---------- footer credit: the cloud ----------
+   Two conic gradients, heavily blurred, on one long loop - the second offset
+   by half a cycle so a new bloom opens as the last fades, giving a continuous
+   radiate rather than a pulse with gaps. Conic rather than radial so the
+   layer carries several hues at once, and each bloom rotates as it grows so
+   the colours actually travel. A slow full hue-rotate sits on top, so the
+   cloud never settles on one colour.
+   isolation keeps the z-index:-1 cloud inside the link's own layer. */
+
+.site-foot .credit a { position: relative; isolation: isolate; }
+
+.site-foot .credit a::before,
+.site-foot .credit a::after {
+  content: "";
+  position: absolute;
+  inset: -12px -22px;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  transform: scale(0.55);
+  filter: blur(16px);
+}
+
+.site-foot .credit a::before {
+  background: conic-gradient(from 0deg,
+              #ff6fae, #ffb347, #ffe66d, #6ee7b7, #5ec8ff, #a78bfa, #ff6fae);
+}
+.site-foot .credit a::after {
+  background: conic-gradient(from 140deg,
+              #7afcff, #b16cff, #ff8fab, #ffd56b, #7afcff);
+}
+
+.site-foot .credit a:hover::before,
+.site-foot .credit a:hover::after,
+.site-foot .credit a:focus-visible::before,
+.site-foot .credit a:focus-visible::after {
+  animation: creditCloud 7.5s ease-out infinite, creditHue 26s linear infinite;
+}
+.site-foot .credit a:hover::after,
+.site-foot .credit a:focus-visible::after { animation-delay: 3.75s, 0s; }
+
+@keyframes creditCloud {
+  0%   { opacity: 0;    transform: scale(0.55) rotate(0deg); }
+  30%  { opacity: 0.85; }
+  100% { opacity: 0;    transform: scale(2.2) rotate(150deg); }
+}
+@keyframes creditHue {
+  from { filter: blur(16px) hue-rotate(0deg); }
+  to   { filter: blur(16px) hue-rotate(360deg); }
+}
+
+/* "Click for more", written out beside the credit ---------------------
+   Sits immediately left of the link on the same baseline, so it can't
+   land on the nav row above. The clip-path wipe runs on steps() rather
+   than smoothly: stepping makes letters arrive in clumps, like a pen
+   moving, where a linear wipe reads as a curtain opening. */
+
+.site-foot .credit .ed {
+  position: absolute;
+  right: calc(100% + 0.7em);
+  bottom: 0;
+  white-space: nowrap;
+  font-family: "Caveat", "Segoe Script", cursive;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink-soft);
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.site-foot .credit a:hover .ed,
+.site-foot .credit a:focus-visible .ed {
+  opacity: 1;
+  animation: creditWrite 0.9s steps(14, end) 0.15s forwards;
+}
+
+@keyframes creditWrite { to { clip-path: inset(0 0 0 0); } }
+
+/* The name lifts clear of the cloud while it's going. */
+.site-foot .credit a:hover .me,
+.site-foot .credit a:focus-visible .me { color: var(--ink); }
+.site-foot .credit a:hover .by,
+.site-foot .credit a:focus-visible .by { color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .site-foot .credit a:hover::before,
+  .site-foot .credit a:focus-visible::before { animation: none; opacity: 0.5; transform: scale(1.5); }
+  .site-foot .credit a:hover::after,
+  .site-foot .credit a:focus-visible::after { animation: none; opacity: 0; }
+  .site-foot .credit .ed { transition: opacity 0.2s ease; }
+  .site-foot .credit a:hover .ed,
+  .site-foot .credit a:focus-visible .ed { transform: none; }
 }
