@@ -709,39 +709,65 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 
 .site-foot .wrap > p { margin-bottom: 0; }
 
+/* ---------- footer credit ----------
+   Hovering flips "Site by" over to "Need one?" and turns up an arrow.
+   Telfardo sits outside both flipping boxes, so the name cannot vanish
+   mid-animation however the flip is timed.
+
+   Both faces are stacked in one grid cell, so each box is always as wide
+   as its wider face. Without that, swapping "Site by" for the longer
+   "Need one?" would change the width and shove the line sideways as it
+   turned. */
+
 .site-foot .credit {
   flex: 0 0 100%;
   margin-top: 1.1rem;
   text-align: right;
 }
-
-/* Same move as the brand mark: the name in the serif, the qualifier in
-   small tracked sans beside it. */
 .site-foot .credit a {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.6em;
+  gap: 0.55em;
 }
-.site-foot .credit .by {
-  font-size: 0.62rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--ink-soft);
-  transition: color 0.3s ease;
-}
+
 .site-foot .credit .me {
   font-family: var(--serif);
   font-size: 0.82rem;
   letter-spacing: -0.01em;
   color: var(--ink-soft);
-  transition: color 0.3s ease;
+  transition: color 0.5s ease;
 }
-.site-foot .credit a:hover .by { color: var(--ink); }
+.site-foot .credit a:hover .me,
+.site-foot .credit a:focus-visible .me { color: var(--ink); }
+
+.site-foot .credit .swap {
+  display: inline-grid;
+  align-items: baseline;
+  transform-style: preserve-3d;
+  perspective: 600px;
+  /* The delay means brushing past on the way to a nav link doesn't set it off. */
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.12s;
+}
+.site-foot .credit .swap > * {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-soft);
+}
+.site-foot .credit .swap > .back {
+  transform: rotateX(180deg);
+  color: var(--accent);
+}
+.site-foot .credit .arrow > * { font-size: 0.75rem; letter-spacing: 0; }
+
+.site-foot .credit a:hover .swap,
+.site-foot .credit a:focus-visible .swap { transform: rotateX(180deg); }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-foot .credit .me,
-  .site-foot .credit .by { transition: none; }
+  .site-foot .credit .swap { transition: none; }
 }
 
 /* ---------- responsive ---------- */
@@ -784,125 +810,4 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   * { transition: none !important; }
-}
-
-/* ---------- footer credit: the cloud ----------
-   Two conic gradients, heavily blurred, on one long loop - the second offset
-   by half a cycle so a new bloom opens as the last fades, giving a continuous
-   radiate rather than a pulse with gaps. Conic rather than radial so the
-   layer carries several hues at once, and each bloom rotates as it grows so
-   the colours actually travel. A slow full hue-rotate sits on top, so the
-   cloud never settles on one colour.
-   isolation keeps the z-index:-1 cloud inside the link's own layer. */
-
-.site-foot .credit a { position: relative; isolation: isolate; }
-
-.site-foot .credit a::before,
-.site-foot .credit a::after {
-  content: "";
-  position: absolute;
-  inset: -12px -22px;
-  border-radius: 50%;
-  opacity: 0;
-  pointer-events: none;
-  z-index: -1;
-  transform: scale(0.55);
-  filter: blur(16px);
-}
-
-.site-foot .credit a::before {
-  background: conic-gradient(from 0deg,
-              #ff6fae, #ffb347, #ffe66d, #6ee7b7, #5ec8ff, #a78bfa, #ff6fae);
-}
-.site-foot .credit a::after {
-  background: conic-gradient(from 140deg,
-              #7afcff, #b16cff, #ff8fab, #ffd56b, #7afcff);
-}
-
-.site-foot .credit a:hover::before,
-.site-foot .credit a:hover::after,
-.site-foot .credit a:focus-visible::before,
-.site-foot .credit a:focus-visible::after {
-  animation: creditCloud 7.5s ease-out infinite, creditHue 26s linear infinite;
-}
-.site-foot .credit a:hover::after,
-.site-foot .credit a:focus-visible::after { animation-delay: 3.75s, 0s; }
-
-@keyframes creditCloud {
-  0%   { opacity: 0;    transform: scale(0.55) rotate(0deg); }
-  30%  { opacity: 0.85; }
-  100% { opacity: 0;    transform: scale(2.2) rotate(150deg); }
-}
-@keyframes creditHue {
-  from { filter: blur(16px) hue-rotate(0deg); }
-  to   { filter: blur(16px) hue-rotate(360deg); }
-}
-
-/* Ed, drawn out of the cloud ----------------------------------------
-   Staged deliberately: the figure rises and draws first, the trail runs
-   out of his back, then the caption writes itself along the end of it.
-   pathLength="1" normalises every stroke, so one dashoffset value works
-   for all of them regardless of their actual lengths. */
-
-.site-foot .credit .ed {
-  position: absolute;
-  right: -6px;
-  bottom: 140%;
-  width: 170px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: none;
-}
-.site-foot .credit .ed svg { display: block; width: 100%; height: auto; overflow: visible; }
-
-.site-foot .credit .ed path {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-}
-.site-foot .credit .ed .trail { stroke-width: 1.4; }
-
-.site-foot .credit .ed .cta {
-  font-family: "Caveat", "Segoe Script", cursive;
-  font-size: 15px;
-  font-weight: 600;
-  fill: var(--ink-soft);
-  /* Wiped in from the left, so it reads as being written rather than fading. */
-  clip-path: inset(0 100% 0 0);
-}
-
-.site-foot .credit a:hover .ed,
-.site-foot .credit a:focus-visible .ed { opacity: 1; transform: none; }
-
-.site-foot .credit a:hover .ed .body,
-.site-foot .credit a:focus-visible .ed .body { animation: creditDraw 1.3s ease-out forwards; }
-.site-foot .credit a:hover .ed .bow,
-.site-foot .credit a:focus-visible .ed .bow { animation: creditDraw 0.8s ease-out 0.5s forwards; }
-.site-foot .credit a:hover .ed .trail,
-.site-foot .credit a:focus-visible .ed .trail { animation: creditDraw 0.55s ease-out 1.35s forwards; }
-.site-foot .credit a:hover .ed .cta,
-.site-foot .credit a:focus-visible .ed .cta { animation: creditWrite 1.15s steps(30, end) 1.85s forwards; }
-
-@keyframes creditDraw { to { stroke-dashoffset: 0; } }
-@keyframes creditWrite { to { clip-path: inset(0 0 0 0); } }
-
-/* The name lifts clear of the cloud while it's going. */
-.site-foot .credit a:hover .me,
-.site-foot .credit a:focus-visible .me { color: var(--ink); }
-.site-foot .credit a:hover .by,
-.site-foot .credit a:focus-visible .by { color: var(--ink); }
-
-@media (prefers-reduced-motion: reduce) {
-  .site-foot .credit a:hover::before,
-  .site-foot .credit a:focus-visible::before { animation: none; opacity: 0.5; transform: scale(1.5); }
-  .site-foot .credit a:hover::after,
-  .site-foot .credit a:focus-visible::after { animation: none; opacity: 0; }
-  .site-foot .credit .ed { transition: opacity 0.2s ease; }
-  .site-foot .credit a:hover .ed,
-  .site-foot .credit a:focus-visible .ed { transform: none; }
 }
