@@ -868,14 +868,14 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 .site-foot .credit .ed .trail { stroke-width: 1.4; }
 
 .site-foot .credit .ed .cta {
-  font-family: "Nothing You Could Do", "Segoe Script", cursive;
-  font-size: 13px;
+  font-family: "Homemade Apple", "Segoe Script", cursive;
+  font-size: 10px;
   font-weight: 400;
   fill: var(--ink);
   /* The face ships one weight only, so thicken the strokes by painting a
      stroke underneath the fill rather than faux-bolding it. */
   stroke: var(--ink);
-  stroke-width: 0.4;
+  stroke-width: 0.25;
   paint-order: stroke fill;
   /* Wiped in from the left, so it reads as being written rather than fading. */
   clip-path: inset(0 100% 0 0);
