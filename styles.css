@@ -868,10 +868,15 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 .site-foot .credit .ed .trail { stroke-width: 1.4; }
 
 .site-foot .credit .ed .cta {
-  font-family: "Caveat", "Segoe Script", cursive;
-  font-size: 15px;
-  font-weight: 600;
-  fill: var(--ink-soft);
+  font-family: "Nothing You Could Do", "Segoe Script", cursive;
+  font-size: 13px;
+  font-weight: 400;
+  fill: var(--ink);
+  /* The face ships one weight only, so thicken the strokes by painting a
+     stroke underneath the fill rather than faux-bolding it. */
+  stroke: var(--ink);
+  stroke-width: 0.4;
+  paint-order: stroke fill;
   /* Wiped in from the left, so it reads as being written rather than fading. */
   clip-path: inset(0 100% 0 0);
 }
@@ -886,7 +891,7 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 .site-foot .credit a:hover .ed .trail,
 .site-foot .credit a:focus-visible .ed .trail { animation: creditDraw 0.55s ease-out 1.35s forwards; }
 .site-foot .credit a:hover .ed .cta,
-.site-foot .credit a:focus-visible .ed .cta { animation: creditWrite 1.15s steps(30, end) 1.85s forwards; }
+.site-foot .credit a:focus-visible .ed .cta { animation: creditWrite 1s steps(23, end) 1.85s forwards; }
 
 @keyframes creditDraw { to { stroke-dashoffset: 0; } }
 @keyframes creditWrite { to { clip-path: inset(0 0 0 0); } }
