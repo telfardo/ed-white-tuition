@@ -186,3 +186,6 @@
 }
 .edw-kill:hover { background: #a4342a; color: #fff; }
 .edw-kill[hidden] { display: none; }
+
+.edw-bar .edw-danger { color: #d98b7f; }
+.edw-bar .edw-danger:hover { background: #a4342a; border-color: #a4342a; color: #fff; }

@@ -45,6 +45,7 @@ function startEditor() {
     '<span class="edw-status" id="edw-status">Nothing to publish</span>' +
     '<button class="edw-go" id="edw-publish">Publish</button>' +
     '<button id="edw-reset">Undo all</button>' +
+    '<button id="edw-revert" class="edw-danger">Restore page</button>' +
     '<button id="edw-exit">Done</button>';
   document.body.appendChild(bar);
   document.body.classList.add('edw-editing');
@@ -65,6 +66,24 @@ function startEditor() {
   markDirty();
 
   /* ---------- text editing ---------- */
+
+  /* Take a copy of what's been typed, without the editor's own fingerprints.
+     contenteditable and the editing classes sit on the element while it is
+     being edited; anything nested inside would otherwise be saved along with
+     the text and re-applied as real content next time. */
+  function cleanHTML(el) {
+    var copy = el.cloneNode(true);
+    Array.prototype.forEach.call(copy.querySelectorAll('*'), function (node) {
+      node.removeAttribute('contenteditable');
+      node.removeAttribute('data-edw-bound');
+      node.classList.remove('edw-editable', 'edw-selected', 'edw-outlined');
+      if (node.classList.length === 0) node.removeAttribute('class');
+    });
+    Array.prototype.forEach.call(copy.querySelectorAll('.edw-section-tools, .edw-kill'), function (node) {
+      node.remove();
+    });
+    return copy.innerHTML.trim();
+  }
 
   /* A single delete button that follows whichever block you're pointing at.
      It has to live outside the block: anything placed inside a contenteditable
@@ -125,7 +144,7 @@ function startEditor() {
               return;
             }
 
-            draft.text[key] = el.innerHTML.trim();
+            draft.text[key] = cleanHTML(el);
             delete draft.deleted[key];
             save();
           });
@@ -408,9 +427,40 @@ function startEditor() {
   });
 
   bar.querySelector('#edw-reset').addEventListener('click', function () {
-    if (!confirm('Throw away every change you have not published yet?')) return;
+    if (!confirm('Throw away every change you have not published yet?\n\nAnything already published stays as it is — use "Restore page" for that.')) return;
     localStorage.removeItem(EDW.DRAFT_KEY);
     location.reload();
+  });
+
+  /* "Undo all" only drops the draft. This puts published content back to the
+     original wording too, which otherwise needed someone in the database. */
+  bar.querySelector('#edw-revert').addEventListener('click', function () {
+    var page = pageName();
+    if (!confirm('Put every part of this page back to how it was originally?\n\nThis undoes published changes to this page as well, for everyone. Other pages are left alone.')) return;
+
+    var button = this;
+    button.disabled = true;
+    status.textContent = 'Restoring…';
+
+    EDW.remote.load().then(function (live) {
+      var kept = EDW.blank();
+      Object.keys(kept).forEach(function (part) {
+        var from = (live || {})[part] || {};
+        Object.keys(from).forEach(function (key) {
+          // order is keyed by page name; everything else by "page|section|..."
+          var belongs = (part === 'order') ? (key === page) : (key.split('|')[0] === page);
+          if (!belongs) kept[part][key] = from[key];
+        });
+      });
+      return EDW.remote.save(kept);
+    }).then(function () {
+      localStorage.removeItem(EDW.DRAFT_KEY);
+      location.reload();
+    }).catch(function (err) {
+      button.disabled = false;
+      status.textContent = 'Could not restore: ' + err.message;
+      status.classList.add('is-dirty');
+    });
   });
 
   bar.querySelector('#edw-exit').addEventListener('click', function () {

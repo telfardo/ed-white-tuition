@@ -33,6 +33,9 @@ window.EDW_SAVED = {
 
   function blank() { return JSON.parse(JSON.stringify(EMPTY)); }
 
+  /* What each element looked like before any override touched it. */
+  var originals = new WeakMap();
+
   function readJSON(key) {
     try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
   }
@@ -191,11 +194,19 @@ window.EDW_SAVED = {
 
       /* Remember the original before overwriting it, so that content
          arriving later can put things back rather than only ever piling
-         one override on top of another. */
+         one override on top of another.
+
+         Held in a WeakMap rather than on the element. Stored as a data-
+         attribute it became part of the element's own markup, so capturing
+         a parent's innerHTML swept the attribute up with it and wrote the
+         bookkeeping into the saved content. */
       function original(el, prop) {
-        var slot = 'edwOrig' + prop;
-        if (el.dataset[slot] === undefined) el.dataset[slot] = el[prop] || '';
-        return el.dataset[slot];
+        var seen = originals.get(el) || {};
+        if (seen[prop] === undefined) {
+          seen[prop] = el[prop] || '';
+          originals.set(el, seen);
+        }
+        return seen[prop];
       }
 
       Array.prototype.forEach.call(this.textNodes(), function (el) {
