@@ -86,8 +86,8 @@ it grants read access and nothing else. Row-level security is what stops writes.
 
 ## Publishing
 
-Currently on **GitHub Pages**, served from `main` at the repository root. Any
-push to `main` redeploys it within a minute or two:
+Live at **https://edtutors.telfardo.com**, served by **Netlify** from `main`.
+Any push redeploys it within a minute or two:
 
 ```
 git add -A
@@ -95,13 +95,24 @@ git commit -m "Update copy"
 git push
 ```
 
-`.nojekyll` is there to stop GitHub running the files through Jekyll.
+That redeploys the *code* only. Ed's content edits do not go through git at
+all any more — they are live the moment he presses Publish.
 
-Note that this only redeploys the *code*. Ed's content edits do not go through
-git at all any more — they are live the moment he presses Publish.
+### There is a second copy
 
-Alternatively, drag this folder onto [app.netlify.com/drop](https://app.netlify.com/drop)
-— no build command, publish directory is the folder root.
+GitHub Pages is also still switched on and serving this same repository at
+https://telfardo.github.io/ed-white-tuition/. It is a full duplicate of the
+site at a different address.
+
+It is not harmful — both copies read their content from the same Supabase row,
+so they show the same thing — but two public copies of the same site split
+search rankings between them, and it is one more URL that can be shared by
+mistake and then go stale in someone's bookmarks.
+
+To switch it off: repository **Settings → Pages → Source → None**.
+
+`.nojekyll` exists for that Pages copy, to stop GitHub running the files
+through Jekyll. It can go at the same time.
 
 ## Tweaking the look
 
