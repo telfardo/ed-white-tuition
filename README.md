@@ -47,36 +47,47 @@ top of `script.js`, plus the `wa.me` and `mailto:` links in the HTML.
 
 ## Editing the site without touching code
 
-Go to `/admin.html`, sign in (`admin` / `password`), then open any page. A bar
-appears along the bottom with three modes:
+Go to `/admin.html`, sign in with your email and password, then open any page. A
+bar appears along the bottom with three modes:
 
 - **Text** — click any heading or paragraph and type over it
-- **Photos** — click a photo to change its size, shape, and which part of it shows
-- **Sections** — move whole blocks up and down, or hide them
+- **Photos** — change a photo's size, shape and framing, or upload a new one
+- **Sections** — move whole blocks up and down, hide them, or delete them
 
-Changes are saved in that browser straight away, but **they are only live for
-that one person** until they're published. To publish them:
+Changes are held in your own browser as you work. Press **Publish** and they go
+live for everyone straight away. Nothing needs sending on, and nobody has to
+commit anything.
 
-1. Press **Export** in the editing bar — this downloads a `content.js`
-2. Replace the `content.js` in this folder with the downloaded one
-3. Commit and push
+**Undo all** throws away anything not yet published. Once published, the way
+back is to edit it again — there is no version history.
 
-`content.js` holds nothing but the overrides, so the original wording stays in
-the HTML and can always be recovered by emptying that file.
+### Who can edit
 
-### About the password
+Sign-in is Supabase Auth, and writing is limited to the addresses listed in the
+`editors` table in the database. Being signed in is not enough on its own:
+Supabase allows public email signup by default, so without that list a stranger
+could register and edit the site. To add or remove an editor, change that table.
 
-It is checked in the browser, so anyone who views the page source can read it.
-It keeps a passer-by out of the editor; it is not real security, and there is
-nothing behind it that could be damaged permanently — the worst case is someone
-exporting a file nobody commits. Treat `/admin.html` as a convenience, and take
-it out when it's no longer needed by deleting `admin.html`, `admin.js`,
-`admin.css` and the two `<script>`/`<link>` lines that reference them.
+Accounts are created in the Supabase dashboard under **Authentication → Users**.
+
+### Where the content lives
+
+Supabase project **Ed White Tuition** (`mmcghrsbugsakxhpehvg`, London). One row
+in `site_content` holds every override as JSON; uploaded photos go to the
+`site-images` storage bucket.
+
+The `window.EDW_SAVED` block at the top of `content.js` is a fallback, not the
+source of truth. It is applied instantly so the page never flashes, then the
+live content arrives and replaces it. If Supabase is ever unreachable the site
+falls back to that, and to the original wording in the HTML underneath.
+
+The API key in `content.js` is the publishable key and is meant to be public —
+it grants read access and nothing else. Row-level security is what stops writes.
 
 ## Publishing
 
-Currently on **GitHub Pages**, served from `main` at the repository root. Any
-push to `main` redeploys it within a minute or two:
+Live at **https://edtutors.telfardo.com**, served by **Netlify** from `main`.
+Any push redeploys it within a minute or two:
 
 ```
 git add -A
@@ -84,10 +95,24 @@ git commit -m "Update copy"
 git push
 ```
 
-`.nojekyll` is there to stop GitHub running the files through Jekyll.
+That redeploys the *code* only. Ed's content edits do not go through git at
+all any more — they are live the moment he presses Publish.
 
-Alternatively, drag this folder onto [app.netlify.com/drop](https://app.netlify.com/drop)
-— no build command, publish directory is the folder root.
+### There is a second copy
+
+GitHub Pages is also still switched on and serving this same repository at
+https://telfardo.github.io/ed-white-tuition/. It is a full duplicate of the
+site at a different address.
+
+It is not harmful — both copies read their content from the same Supabase row,
+so they show the same thing — but two public copies of the same site split
+search rankings between them, and it is one more URL that can be shared by
+mistake and then go stale in someone's bookmarks.
+
+To switch it off: repository **Settings → Pages → Source → None**.
+
+`.nojekyll` exists for that Pages copy, to stop GitHub running the files
+through Jekyll. It can go at the same time.
 
 ## Tweaking the look
 

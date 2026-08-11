@@ -1,17 +1,20 @@
 /* Ed White Tuition — the editor.
-   Loads on every page but does nothing at all unless you've signed in on
-   /admin.html. Edits are kept in this browser until you press Export. */
-
-var SESSION_KEY = 'edw-admin-on';
+   Loads on every page but does nothing at all unless Ed has signed in on
+   /admin.html. Edits are held in this browser until he presses Publish,
+   which writes them to Supabase and makes them live for everyone. */
 
 /* content.js announces itself when it has applied any saved overrides. Wait
    for that rather than relying on script order, which is easy to get wrong. */
-if (localStorage.getItem(SESSION_KEY) === 'yes') {
-  if (window.EDW && window.EDW.ready) {
+if (window.EDW && window.EDW.auth && window.EDW.auth.session()) {
+  if (window.EDW.ready) {
     startEditor();
   } else {
     document.addEventListener('edw:ready', startEditor, { once: true });
   }
+} else if (!window.EDW) {
+  document.addEventListener('edw:ready', function () {
+    if (window.EDW.auth.session()) startEditor();
+  }, { once: true });
 }
 
 function startEditor() {
@@ -21,7 +24,7 @@ function startEditor() {
   if (document.querySelector('.edw-bar')) return;
 
   var EDW = window.EDW;
-  var draft = EDW.draft() || { text: {}, layout: {}, hidden: {}, order: {} };
+  var draft = EDW.draft() || EDW.blank();
   var mode = null;
 
   function save() {
@@ -39,38 +42,170 @@ function startEditor() {
     '<button data-mode="layout">Photos</button>' +
     '<button data-mode="sections">Sections</button>' +
     '<span class="edw-sep"></span>' +
-    '<span class="edw-status" id="edw-status">No unsaved changes</span>' +
-    '<button class="edw-go" id="edw-export">Export</button>' +
-    '<button id="edw-reset">Undo all</button>' +
+    '<span class="edw-status" id="edw-status">Nothing to publish</span>' +
+    '<button class="edw-go" id="edw-publish">Publish</button>' +
+    '<button id="edw-reset">Discard my edits</button>' +
+    '<button id="edw-revert" class="edw-danger">Reset page</button>' +
     '<button id="edw-exit">Done</button>';
   document.body.appendChild(bar);
   document.body.classList.add('edw-editing');
 
   var status = bar.querySelector('#edw-status');
 
+  function countChanges() {
+    return Object.keys(draft).reduce(function (n, part) {
+      return n + Object.keys(draft[part] || {}).length;
+    }, 0);
+  }
+
   function markDirty() {
-    var n = Object.keys(draft.text).length +
-            Object.keys(draft.layout).length +
-            Object.keys(draft.hidden).length +
-            Object.keys(draft.order).length;
-    status.textContent = n ? n + ' change' + (n === 1 ? '' : 's') + ' not yet exported' : 'No unsaved changes';
+    var n = countChanges();
+    status.textContent = n ? n + ' change' + (n === 1 ? '' : 's') + ' not published yet' : 'Nothing to publish';
     status.classList.toggle('is-dirty', !!n);
   }
   markDirty();
 
   /* ---------- text editing ---------- */
 
+  /* Ask in the page rather than with confirm(). A browser confirm always
+     announces the domain it came from - "deploy-preview-8--edwhitetutors
+     .netlify.app says" - which means nothing to Ed and reads like a scam
+     popup. This also allows a plain sentence about what is about to happen. */
+  function ask(title, detail, confirmLabel) {
+    return new Promise(function (resolve) {
+      var back = document.createElement('div');
+      back.className = 'edw-ask';
+      back.innerHTML =
+        '<div class="edw-ask-box" role="dialog" aria-modal="true">' +
+        '<h3></h3><p></p>' +
+        '<div class="edw-ask-actions">' +
+        '<button type="button" data-no>Cancel</button>' +
+        '<button type="button" class="edw-go" data-yes></button>' +
+        '</div></div>';
+      back.querySelector('h3').textContent = title;
+      back.querySelector('p').textContent = detail;
+      back.querySelector('[data-yes]').textContent = confirmLabel;
+      document.body.appendChild(back);
+      back.querySelector('[data-yes]').focus();
+
+      function done(answer) { back.remove(); resolve(answer); }
+      back.querySelector('[data-yes]').addEventListener('click', function () { done(true); });
+      back.querySelector('[data-no]').addEventListener('click', function () { done(false); });
+      back.addEventListener('click', function (e) { if (e.target === back) done(false); });
+      document.addEventListener('keydown', function esc(e) {
+        if (e.key === 'Escape') { document.removeEventListener('keydown', esc); done(false); }
+      });
+    });
+  }
+
+  /* Take a copy of what's been typed, without the editor's own fingerprints.
+     contenteditable and the editing classes sit on the element while it is
+     being edited; anything nested inside would otherwise be saved along with
+     the text and re-applied as real content next time. */
+  function cleanHTML(el) {
+    var copy = el.cloneNode(true);
+    Array.prototype.forEach.call(copy.querySelectorAll('*'), function (node) {
+      node.removeAttribute('contenteditable');
+      node.removeAttribute('data-edw-bound');
+      node.classList.remove('edw-editable', 'edw-selected', 'edw-outlined');
+      if (node.classList.length === 0) node.removeAttribute('class');
+    });
+    Array.prototype.forEach.call(copy.querySelectorAll('.edw-section-tools, .edw-kill'), function (node) {
+      node.remove();
+    });
+    return copy.innerHTML.trim();
+  }
+
+  /* A single delete button that follows whichever block you're pointing at.
+     It has to live outside the block: anything placed inside a contenteditable
+     becomes part of the text being edited. */
+  var killer = document.createElement('button');
+  killer.type = 'button';
+  killer.className = 'edw-kill';
+  killer.title = 'Delete this block';
+  killer.textContent = '×';
+  killer.hidden = true;
+  document.body.appendChild(killer);
+
+  var killTarget = null;
+
+  function aimKiller(el) {
+    killTarget = el;
+    var box = el.getBoundingClientRect();
+    killer.style.top = (box.top + window.scrollY - 10) + 'px';
+    killer.style.left = (box.right + window.scrollX - 10) + 'px';
+    killer.hidden = false;
+  }
+
+  /* Blocks Ed added himself aren't part of the page's own markup, so they
+     are dropped from the list rather than marked as deleted. */
+  function addedRecord(el) {
+    var id = el.dataset.edwAdded;
+    if (!id) return null;
+    var section = el.closest('section');
+    var key = section ? EDW.keyFor(section) : null;
+    var list = key ? (draft.added[key] || []) : [];
+    var found = null;
+    list.forEach(function (item) { if (item.id === id) found = item; });
+    return found ? { key: key, id: id, list: list, item: found } : null;
+  }
+
+  function removeBlock(el) {
+    var record = addedRecord(el);
+    if (record) {
+      draft.added[record.key] = record.list.filter(function (i) { return i.id !== record.id; });
+      el.remove();
+    } else {
+      draft.deleted[EDW.keyFor(el)] = true;
+      delete draft.text[EDW.keyFor(el)];
+      el.style.display = 'none';
+    }
+    killer.hidden = true;
+    save();
+  }
+
+  killer.addEventListener('click', function () {
+    if (killTarget) removeBlock(killTarget);
+  });
+
   function setTextMode(on) {
+    if (!on) killer.hidden = true;
+
     Array.prototype.forEach.call(EDW.textNodes(), function (el) {
       if (on) {
         el.setAttribute('contenteditable', 'true');
         el.classList.add('edw-editable');
         if (!el.dataset.edwBound) {
           el.dataset.edwBound = '1';
+
+          el.addEventListener('mouseenter', function () {
+            if (document.body.classList.contains('edw-mode-text')) aimKiller(el);
+          });
+
           el.addEventListener('blur', function () {
-            draft.text[EDW.keyFor(el)] = el.innerHTML.trim();
+            /* Emptying a block is how you say you don't want it. Leaving an
+               empty paragraph behind would still occupy its margins and leave
+               a gap in the page. */
+            if (!el.textContent.trim() && !el.querySelector('img')) {
+              removeBlock(el);
+              status.textContent = 'Empty block removed — "Discard my edits" brings it back';
+              return;
+            }
+
+            var record = addedRecord(el);
+            if (record) {
+              record.item.html = cleanHTML(el);
+              draft.added[record.key] = record.list;
+              save();
+              return;
+            }
+
+            var key = EDW.keyFor(el);
+            draft.text[key] = cleanHTML(el);
+            delete draft.deleted[key];
             save();
           });
+
           el.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') el.blur();
           });
@@ -82,7 +217,7 @@ function startEditor() {
     });
   }
 
-  /* ---------- photo size & crop ---------- */
+  /* ---------- photo size, crop & replace ---------- */
 
   var panel = null;
 
@@ -98,8 +233,10 @@ function startEditor() {
     slot.classList.add('edw-selected');
 
     var key = EDW.keyFor(slot);
-    var box = draft.layout[key] || (window.EDW_SAVED.layout || {})[key] || {};
+    var live = EDW.current();
+    var box = draft.layout[key] || live.layout[key] || {};
     var img = slot.querySelector('img');
+    var imgKey = img ? EDW.keyFor(img) : null;
 
     // Start the sliders from whatever the photo is actually showing.
     var pos = (box.position || getComputedStyle(img).objectPosition || '50% 50%').split(/\s+/);
@@ -111,6 +248,9 @@ function startEditor() {
     panel.className = 'edw-panel';
     panel.innerHTML =
       '<h4>Photo</h4>' +
+      '<label class="edw-file">Replace this photo' +
+      '<input type="file" id="edw-upload" accept="image/jpeg,image/png,image/webp,image/avif"></label>' +
+      '<p class="edw-upload-note" id="edw-upload-note" hidden></p>' +
       '<label>Size <output id="p-w">' + width + 'px</output>' +
       '<input type="range" id="edw-width" min="80" max="900" value="' + width + '"></label>' +
       '<label>Move across <output id="p-x">' + Math.round(px) + '%</output>' +
@@ -139,6 +279,26 @@ function startEditor() {
       save();
     }
 
+    var note = panel.querySelector('#edw-upload-note');
+
+    panel.querySelector('#edw-upload').addEventListener('change', function () {
+      var file = this.files && this.files[0];
+      if (!file || !imgKey) return;
+
+      note.hidden = false;
+      note.textContent = 'Uploading ' + file.name + '…';
+
+      EDW.storage.upload(file).then(function (url) {
+        draft.images[imgKey] = url;
+        img.src = url;
+        slot.classList.remove('is-empty');
+        save();
+        note.textContent = 'Uploaded. Press Publish to put it live.';
+      }).catch(function (err) {
+        note.textContent = 'Upload failed: ' + err.message;
+      });
+    });
+
     panel.querySelector('#edw-width').addEventListener('input', function () {
       slot.style.width = this.value + 'px';
       slot.style.maxWidth = '100%';
@@ -164,6 +324,7 @@ function startEditor() {
 
     panel.querySelector('#edw-clear').addEventListener('click', function () {
       delete draft.layout[key];
+      if (imgKey) delete draft.images[imgKey];
       slot.style.width = '';
       slot.style.aspectRatio = '';
       img.style.objectPosition = '';
@@ -189,7 +350,7 @@ function startEditor() {
     if (!on) closePanel();
   }
 
-  /* ---------- section order & visibility ---------- */
+  /* ---------- section order, visibility & deletion ---------- */
 
   function pageName() {
     return (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/, '');
@@ -225,7 +386,9 @@ function startEditor() {
       tools.innerHTML =
         '<button title="Move up">↑</button>' +
         '<button title="Move down">↓</button>' +
-        '<button title="Hide or show">' + (section.hasAttribute('hidden') ? 'Show' : 'Hide') + '</button>';
+        '<button title="Hide or show">' + (section.hasAttribute('hidden') ? 'Show' : 'Hide') + '</button>' +
+        '<button title="Add a paragraph to the end of this block">+ Text</button>' +
+        '<button title="Delete for good" class="edw-danger">Delete</button>';
       section.prepend(tools);
 
       var buttons = tools.querySelectorAll('button');
@@ -252,6 +415,43 @@ function startEditor() {
           this.textContent = 'Show';
         }
         save();
+      });
+
+      buttons[3].addEventListener('click', function () {
+        var key = EDW.keyFor(section);
+        var list = draft.added[key] || [];
+        var item = { id: 'a' + Date.now().toString(36), tag: 'p', html: 'New text — click to edit.' };
+        list.push(item);
+        draft.added[key] = list;
+        save();
+
+        var host = section.querySelector('.wrap') || section;
+        var el = document.createElement(item.tag);
+        el.setAttribute('data-edw-added', item.id);
+        el.innerHTML = item.html;
+        host.appendChild(el);
+
+        /* Put it straight into editing, and switch to Text so the click that
+           created it is also the click that lets you type in it. */
+        setMode('text');
+        el.focus();
+        var range = document.createRange();
+        range.selectNodeContents(el);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+
+      buttons[4].addEventListener('click', function () {
+        ask('Delete this section?',
+            'The whole block goes from the page. Nothing is live until you press Publish, and "Discard my edits" brings it straight back before then.',
+            'Delete it').then(function (yes) {
+          if (!yes) return;
+          draft.deleted[EDW.keyFor(section)] = true;
+          section.style.display = 'none';
+          save();
+        });
       });
     });
   }
@@ -283,44 +483,93 @@ function startEditor() {
     b.addEventListener('click', function () { setMode(b.dataset.mode); });
   });
 
-  /* ---------- export ---------- */
+  /* ---------- publish ---------- */
 
-  bar.querySelector('#edw-export').addEventListener('click', function () {
-    var merged = EDW.current();
+  bar.querySelector('#edw-publish').addEventListener('click', function () {
+    var button = this;
+    if (!countChanges()) return;
 
-    fetch('content.js')
-      .then(function (r) { return r.text(); })
-      .catch(function () { return null; })
-      .then(function (original) {
-        var body = 'window.EDW_SAVED = ' + JSON.stringify(merged, null, 2) + ';';
-        var out;
+    button.disabled = true;
+    status.textContent = 'Publishing…';
 
-        if (original && original.indexOf('window.EDW_SAVED =') !== -1) {
-          out = original.replace(/window\.EDW_SAVED = [\s\S]*?\n\};/, body);
-        } else {
-          out = body;
-        }
-
-        var blob = new Blob([out], { type: 'text/javascript' });
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'content.js';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-
-        status.textContent = 'Exported — send content.js to the one and only Ned Telfer';
+    /* Re-read what is live first, so publishing from one device does not
+       quietly wipe an edit made on another. */
+    EDW.remote.load().then(function (live) {
+      var merged = EDW.blank();
+      Object.keys(merged).forEach(function (part) {
+        merged[part] = Object.assign({}, (live || {})[part], draft[part]);
       });
+      return EDW.remote.save(merged);
+    }).then(function () {
+      localStorage.removeItem(EDW.DRAFT_KEY);
+      draft = EDW.blank();
+      button.disabled = false;
+      markDirty();
+      status.textContent = 'Published — live for everyone';
+      status.classList.remove('is-dirty');
+    }).catch(function (err) {
+      button.disabled = false;
+      status.textContent = 'Could not publish: ' + err.message;
+      status.classList.add('is-dirty');
+    });
   });
 
   bar.querySelector('#edw-reset').addEventListener('click', function () {
-    if (!confirm('Throw away every change you have made in this browser?')) return;
-    localStorage.removeItem(EDW.DRAFT_KEY);
-    location.reload();
+    ask('Discard your unpublished edits?',
+        'Everything you have changed since you last pressed Publish is thrown away. Anything you have already published stays exactly as it is.',
+        'Discard them').then(function (yes) {
+      if (!yes) return;
+      localStorage.removeItem(EDW.DRAFT_KEY);
+      location.reload();
+    });
   });
 
+  /* "Discard my edits" only drops the draft. This puts published content back
+     to the original wording too, which otherwise needed someone in the
+     database with a SQL prompt open. */
+  bar.querySelector('#edw-revert').addEventListener('click', function () {
+    var button = this;
+    ask('Put this page back to how it started?',
+        'Every edit to this page is undone, including ones already published, and everyone sees the original wording again. Other pages are not touched.',
+        'Reset the page').then(function (yes) {
+      if (yes) doReset(button);
+    });
+  });
+
+  function doReset(button) {
+    var page = pageName();
+    button.disabled = true;
+    status.textContent = 'Resetting…';
+
+    EDW.remote.load().then(function (live) {
+      var kept = EDW.blank();
+      Object.keys(kept).forEach(function (part) {
+        var from = (live || {})[part] || {};
+        Object.keys(from).forEach(function (key) {
+          // order is keyed by page name; everything else by "page|section|..."
+          var belongs = (part === 'order') ? (key === page) : (key.split('|')[0] === page);
+          if (!belongs) kept[part][key] = from[key];
+        });
+      });
+      return EDW.remote.save(kept);
+    }).then(function () {
+      localStorage.removeItem(EDW.DRAFT_KEY);
+      location.reload();
+    }).catch(function (err) {
+      button.disabled = false;
+      status.textContent = 'Could not reset: ' + err.message;
+      status.classList.add('is-dirty');
+    });
+  }
+
   bar.querySelector('#edw-exit').addEventListener('click', function () {
-    localStorage.removeItem(SESSION_KEY);
-    location.reload();
+    if (!countChanges()) { EDW.auth.signOut(); location.reload(); return; }
+    ask('Leave without publishing?',
+        'You have changes that are not live yet. They stay saved in this browser, so you can come back and publish them later.',
+        'Leave anyway').then(function (yes) {
+      if (!yes) return;
+      EDW.auth.signOut();
+      location.reload();
+    });
   });
 }

@@ -142,3 +142,104 @@
   .edw-bar { font-size: 0.8rem; padding: 0.55rem 0.7rem; }
   .edw-panel { right: 0.6rem; left: 0.6rem; width: auto; }
 }
+
+/* ---- photo replacement & destructive actions ---- */
+
+.edw-panel .edw-file {
+  display: block;
+  margin-bottom: 0.9rem;
+}
+.edw-panel .edw-file input[type="file"] {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+  font: inherit;
+  font-size: 0.82rem;
+}
+.edw-panel .edw-upload-note {
+  margin: -0.4rem 0 0.9rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.edw-panel .edw-upload-note[hidden] { display: none; }
+
+.edw-section-tools .edw-danger { color: #a4342a; }
+.edw-section-tools .edw-danger:hover { background: #a4342a; border-color: #a4342a; color: #fff; }
+
+/* ---- delete a single block ---- */
+
+.edw-kill {
+  position: absolute;
+  z-index: 9998;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  line-height: 18px;
+  text-align: center;
+  font-size: 15px;
+  border-radius: 50%;
+  border: 1px solid #a4342a;
+  background: #fff;
+  color: #a4342a;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(34, 32, 29, 0.18);
+}
+.edw-kill:hover { background: #a4342a; color: #fff; }
+.edw-kill[hidden] { display: none; }
+
+.edw-bar .edw-danger { color: #d98b7f; }
+.edw-bar .edw-danger:hover { background: #a4342a; border-color: #a4342a; color: #fff; }
+
+/* ---- in-page confirmation ---- */
+
+.edw-ask {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(34, 32, 29, 0.5);
+}
+.edw-ask-box {
+  width: min(100%, 420px);
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.6rem 1.7rem 1.4rem;
+  box-shadow: 0 18px 50px rgba(34, 32, 29, 0.3);
+}
+.edw-ask-box h3 {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 1.2rem;
+  margin: 0 0 0.5rem;
+  color: #22201d;
+}
+.edw-ask-box p {
+  margin: 0 0 1.4rem;
+  font-size: 0.93rem;
+  line-height: 1.55;
+  color: #5d564e;
+}
+.edw-ask-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+.edw-ask-actions button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 100px;
+  border: 1px solid #e6ded2;
+  background: #fff;
+  color: #5d564e;
+  cursor: pointer;
+}
+.edw-ask-actions button:hover { border-color: #b8734f; color: #22201d; }
+.edw-ask-actions .edw-go {
+  background: #9c5334;
+  border-color: #9c5334;
+  color: #fff;
+}
+.edw-ask-actions .edw-go:hover { background: #86462b; color: #fff; }
