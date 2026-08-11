@@ -16,7 +16,8 @@ window.EDW_SAVED = {
   hidden: {},
   order: {},
   images: {},
-  deleted: {}
+  deleted: {},
+  added: {}
 };
 
 (function () {
@@ -29,7 +30,7 @@ window.EDW_SAVED = {
   var CACHE_KEY = 'edw-cache-v1';   // last known live content, for instant paint
   var TOKEN_KEY = 'edw-session-v1'; // Ed's Supabase session
 
-  var EMPTY = { text: {}, layout: {}, hidden: {}, order: {}, images: {}, deleted: {} };
+  var EMPTY = { text: {}, layout: {}, hidden: {}, order: {}, images: {}, deleted: {}, added: {} };
 
   function blank() { return JSON.parse(JSON.stringify(EMPTY)); }
 
@@ -157,6 +158,32 @@ window.EDW_SAVED = {
       });
     },
 
+    signInWithGoogle: function () {
+      location.href = SUPABASE_URL + '/auth/v1/authorize?provider=google&redirect_to=' +
+        encodeURIComponent(location.origin + location.pathname);
+    },
+
+    /* Coming back from Google, the tokens arrive in the URL fragment rather
+       than a response body. Same shape as the password grant, so everything
+       downstream is unchanged. The fragment is wiped afterwards so the token
+       isn't left sitting in the address bar or in history. */
+    collectRedirect: function () {
+      if (!location.hash || location.hash.indexOf('access_token=') === -1) return false;
+
+      var parts = new URLSearchParams(location.hash.slice(1));
+      var session = {
+        access_token: parts.get('access_token'),
+        refresh_token: parts.get('refresh_token'),
+        expires_in: Number(parts.get('expires_in')) || 3600,
+        token_type: parts.get('token_type') || 'bearer'
+      };
+      if (!session.access_token) return false;
+
+      localStorage.setItem(TOKEN_KEY, JSON.stringify(session));
+      history.replaceState(null, '', location.pathname + location.search);
+      return true;
+    },
+
     signOut: function () { localStorage.removeItem(TOKEN_KEY); }
   };
 
@@ -221,6 +248,12 @@ window.EDW_SAVED = {
     apply: function () {
       var data = this.current();
 
+      /* Clear anything added last time round, so re-applying newer content
+         doesn't stack duplicates up. They go back on at the end. */
+      Array.prototype.forEach.call(document.querySelectorAll('[data-edw-added]'), function (el) {
+        el.remove();
+      });
+
       /* Remember the original before overwriting it, so that content
          arriving later can put things back rather than only ever piling
          one override on top of another.
@@ -277,6 +310,21 @@ window.EDW_SAVED = {
       gone.forEach(function (el) {
         if (data.deleted[keyFor(el)]) el.style.display = 'none';
         else if (el.style.display === 'none') el.style.display = '';
+      });
+
+      /* Blocks Ed has added. They are appended after everything that was
+         already there, which is what keeps the positional keys of the
+         original elements pointing where they always did. Each carries its
+         own id, so editing one never depends on where it sits. */
+      Array.prototype.forEach.call(this.sections(), function (section) {
+        var list = data.added[keyFor(section)] || [];
+        var host = section.querySelector('.wrap') || section;
+        list.forEach(function (item) {
+          var el = document.createElement(item.tag || 'p');
+          el.setAttribute('data-edw-added', item.id);
+          el.innerHTML = item.html || '';
+          host.appendChild(el);
+        });
       });
 
       var main = document.querySelector('main');

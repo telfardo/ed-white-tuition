@@ -137,10 +137,29 @@ function startEditor() {
     killer.hidden = false;
   }
 
+  /* Blocks Ed added himself aren't part of the page's own markup, so they
+     are dropped from the list rather than marked as deleted. */
+  function addedRecord(el) {
+    var id = el.dataset.edwAdded;
+    if (!id) return null;
+    var section = el.closest('section');
+    var key = section ? EDW.keyFor(section) : null;
+    var list = key ? (draft.added[key] || []) : [];
+    var found = null;
+    list.forEach(function (item) { if (item.id === id) found = item; });
+    return found ? { key: key, id: id, list: list, item: found } : null;
+  }
+
   function removeBlock(el) {
-    draft.deleted[EDW.keyFor(el)] = true;
-    delete draft.text[EDW.keyFor(el)];
-    el.style.display = 'none';
+    var record = addedRecord(el);
+    if (record) {
+      draft.added[record.key] = record.list.filter(function (i) { return i.id !== record.id; });
+      el.remove();
+    } else {
+      draft.deleted[EDW.keyFor(el)] = true;
+      delete draft.text[EDW.keyFor(el)];
+      el.style.display = 'none';
+    }
     killer.hidden = true;
     save();
   }
@@ -164,8 +183,6 @@ function startEditor() {
           });
 
           el.addEventListener('blur', function () {
-            var key = EDW.keyFor(el);
-
             /* Emptying a block is how you say you don't want it. Leaving an
                empty paragraph behind would still occupy its margins and leave
                a gap in the page. */
@@ -175,6 +192,15 @@ function startEditor() {
               return;
             }
 
+            var record = addedRecord(el);
+            if (record) {
+              record.item.html = cleanHTML(el);
+              draft.added[record.key] = record.list;
+              save();
+              return;
+            }
+
+            var key = EDW.keyFor(el);
             draft.text[key] = cleanHTML(el);
             delete draft.deleted[key];
             save();
@@ -361,6 +387,7 @@ function startEditor() {
         '<button title="Move up">↑</button>' +
         '<button title="Move down">↓</button>' +
         '<button title="Hide or show">' + (section.hasAttribute('hidden') ? 'Show' : 'Hide') + '</button>' +
+        '<button title="Add a paragraph to the end of this block">+ Text</button>' +
         '<button title="Delete for good" class="edw-danger">Delete</button>';
       section.prepend(tools);
 
@@ -391,6 +418,32 @@ function startEditor() {
       });
 
       buttons[3].addEventListener('click', function () {
+        var key = EDW.keyFor(section);
+        var list = draft.added[key] || [];
+        var item = { id: 'a' + Date.now().toString(36), tag: 'p', html: 'New text — click to edit.' };
+        list.push(item);
+        draft.added[key] = list;
+        save();
+
+        var host = section.querySelector('.wrap') || section;
+        var el = document.createElement(item.tag);
+        el.setAttribute('data-edw-added', item.id);
+        el.innerHTML = item.html;
+        host.appendChild(el);
+
+        /* Put it straight into editing, and switch to Text so the click that
+           created it is also the click that lets you type in it. */
+        setMode('text');
+        el.focus();
+        var range = document.createRange();
+        range.selectNodeContents(el);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+
+      buttons[4].addEventListener('click', function () {
         ask('Delete this section?',
             'The whole block goes from the page. Nothing is live until you press Publish, and "Discard my edits" brings it straight back before then.',
             'Delete it').then(function (yes) {
