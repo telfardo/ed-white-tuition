@@ -223,6 +223,7 @@ label .opt { font-weight: 400; color: var(--ink-faint); }
 
 input[type="text"],
 input[type="email"],
+input[type="password"],
 select,
 textarea {
   width: 100%;
