@@ -47,19 +47,37 @@ top of `script.js`, plus the `wa.me` and `mailto:` links in the HTML.
 
 ## Editing the site without touching code
 
-Go to `/admin.html`, sign in with your email and password, then open any page. A
-bar appears along the bottom with three modes:
+Go to `/admin` and sign in with Google. There is an email and password form
+behind a link underneath, kept as a way in if Google ever stops working.
 
-- **Text** — click any heading or paragraph and type over it
+Then open any page. A bar appears along the bottom with three modes:
+
+- **Text** — click any heading or paragraph and type over it. Empty one
+  completely and it removes itself rather than leaving a gap; or point at any
+  block and click the × in its corner.
 - **Photos** — change a photo's size, shape and framing, or upload a new one
-- **Sections** — move whole blocks up and down, hide them, or delete them
+- **Sections** — move whole blocks up and down, hide them, delete them, or
+  add a new paragraph with **+ Text**
 
 Changes are held in your own browser as you work. Press **Publish** and they go
 live for everyone straight away. Nothing needs sending on, and nobody has to
 commit anything.
 
-**Undo all** throws away anything not yet published. Once published, the way
-back is to edit it again — there is no version history.
+Two ways back:
+
+- **Discard my edits** — throws away anything not yet published
+- **Reset page** — puts the page you are on back to the original wording,
+  undoing published changes too, for everyone
+
+Neither can destroy anything permanently: the original text lives in the HTML
+files, not in the database. Published edits have no version history though, so
+Reset page cannot itself be undone.
+
+Deleting hides rather than removes. Text overrides are keyed by position —
+`page|section|tag|index` — so taking an element out of the document would
+renumber its later siblings and rebind their saved text to the wrong element.
+Blocks Ed adds are stored as records with their own ids for the same reason,
+and are appended after everything already in the section.
 
 ### Who can edit
 
@@ -69,6 +87,23 @@ Supabase allows public email signup by default, so without that list a stranger
 could register and edit the site. To add or remove an editor, change that table.
 
 Accounts are created in the Supabase dashboard under **Authentication → Users**.
+Signing in with Google for the first time counts as a signup, so **Allow new
+users to sign up** has to stay on. That is safe because the `editors` table, not
+the signup setting, is what grants the ability to change anything — a stranger
+who registers can sign in and gets refused the moment they try to save.
+
+Google sign-in needs three things to line up, and all three are outside this
+repository:
+
+- an OAuth client in Google Cloud Console, whose authorised redirect URI is
+  `https://mmcghrsbugsakxhpehvg.supabase.co/auth/v1/callback`
+- that client's ID and secret in Supabase under **Authentication → Providers**
+- the site on Supabase's redirect allowlist under **Authentication → URL
+  Configuration**, as `https://edtutors.telfardo.com/**`, plus a **Site URL** of
+  `https://edtutors.telfardo.com`
+
+If the Site URL is wrong, signing in appears to work and then lands on
+`localhost:3000`, which is Supabase's default.
 
 ### Where the content lives
 
