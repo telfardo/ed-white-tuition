@@ -165,3 +165,24 @@
 
 .edw-section-tools .edw-danger { color: #a4342a; }
 .edw-section-tools .edw-danger:hover { background: #a4342a; border-color: #a4342a; color: #fff; }
+
+/* ---- delete a single block ---- */
+
+.edw-kill {
+  position: absolute;
+  z-index: 9998;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  line-height: 18px;
+  text-align: center;
+  font-size: 15px;
+  border-radius: 50%;
+  border: 1px solid #a4342a;
+  background: #fff;
+  color: #a4342a;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(34, 32, 29, 0.18);
+}
+.edw-kill:hover { background: #a4342a; color: #fff; }
+.edw-kill[hidden] { display: none; }

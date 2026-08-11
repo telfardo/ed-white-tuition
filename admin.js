@@ -66,17 +66,70 @@ function startEditor() {
 
   /* ---------- text editing ---------- */
 
+  /* A single delete button that follows whichever block you're pointing at.
+     It has to live outside the block: anything placed inside a contenteditable
+     becomes part of the text being edited. */
+  var killer = document.createElement('button');
+  killer.type = 'button';
+  killer.className = 'edw-kill';
+  killer.title = 'Delete this block';
+  killer.textContent = '×';
+  killer.hidden = true;
+  document.body.appendChild(killer);
+
+  var killTarget = null;
+
+  function aimKiller(el) {
+    killTarget = el;
+    var box = el.getBoundingClientRect();
+    killer.style.top = (box.top + window.scrollY - 10) + 'px';
+    killer.style.left = (box.right + window.scrollX - 10) + 'px';
+    killer.hidden = false;
+  }
+
+  function removeBlock(el) {
+    draft.deleted[EDW.keyFor(el)] = true;
+    delete draft.text[EDW.keyFor(el)];
+    el.style.display = 'none';
+    killer.hidden = true;
+    save();
+  }
+
+  killer.addEventListener('click', function () {
+    if (killTarget) removeBlock(killTarget);
+  });
+
   function setTextMode(on) {
+    if (!on) killer.hidden = true;
+
     Array.prototype.forEach.call(EDW.textNodes(), function (el) {
       if (on) {
         el.setAttribute('contenteditable', 'true');
         el.classList.add('edw-editable');
         if (!el.dataset.edwBound) {
           el.dataset.edwBound = '1';
+
+          el.addEventListener('mouseenter', function () {
+            if (document.body.classList.contains('edw-mode-text')) aimKiller(el);
+          });
+
           el.addEventListener('blur', function () {
-            draft.text[EDW.keyFor(el)] = el.innerHTML.trim();
+            var key = EDW.keyFor(el);
+
+            /* Emptying a block is how you say you don't want it. Leaving an
+               empty paragraph behind would still occupy its margins and leave
+               a gap in the page. */
+            if (!el.textContent.trim() && !el.querySelector('img')) {
+              removeBlock(el);
+              status.textContent = 'Empty block removed — "Undo all" brings it back';
+              return;
+            }
+
+            draft.text[key] = el.innerHTML.trim();
+            delete draft.deleted[key];
             save();
           });
+
           el.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') el.blur();
           });

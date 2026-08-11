@@ -224,10 +224,19 @@ window.EDW_SAVED = {
         else el.removeAttribute('hidden');
       });
 
-      /* Deleted sections come out of the document entirely. Section keys are
-         built from the id, so removing one does not shift anyone else's. */
-      Array.prototype.forEach.call(this.sections(), function (el) {
-        if (data.deleted[keyFor(el)]) el.remove();
+      /* Deleted things are hidden, not removed. Text keys are built from an
+         element's position among its same-tag siblings, so taking one out of
+         the document would shift every later sibling's key by one and rebind
+         their saved text to the wrong element. Leaving it in place with
+         display:none looks identical - no gap, nothing left for a screen
+         reader - and keeps every other key pointing where it should. */
+      var gone = [].concat(
+        Array.prototype.slice.call(this.sections()),
+        Array.prototype.slice.call(this.textNodes())
+      );
+      gone.forEach(function (el) {
+        if (data.deleted[keyFor(el)]) el.style.display = 'none';
+        else if (el.style.display === 'none') el.style.display = '';
       });
 
       var main = document.querySelector('main');
@@ -259,17 +268,11 @@ window.EDW_SAVED = {
       var after = JSON.stringify(Object.assign(blank(), live));
       if (before === after) return;
 
-      var deletionsChanged =
-        JSON.stringify((JSON.parse(before || '{}') || {}).deleted || {}) !==
-        JSON.stringify(live.deleted || {});
-
       localStorage.setItem(CACHE_KEY, after);
 
-      /* A section that was deleted is gone from the DOM and cannot be put
-         back in place, so that one case needs a reload. Everything else
-         re-applies cleanly. */
-      if (deletionsChanged) location.reload();
-      else window.EDW.apply();
+      /* Every override is reversible now that nothing is removed from the
+         document, so newer content can simply be re-applied over the top. */
+      window.EDW.apply();
     });
   }
 
