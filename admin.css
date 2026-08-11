@@ -142,3 +142,26 @@
   .edw-bar { font-size: 0.8rem; padding: 0.55rem 0.7rem; }
   .edw-panel { right: 0.6rem; left: 0.6rem; width: auto; }
 }
+
+/* ---- photo replacement & destructive actions ---- */
+
+.edw-panel .edw-file {
+  display: block;
+  margin-bottom: 0.9rem;
+}
+.edw-panel .edw-file input[type="file"] {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+  font: inherit;
+  font-size: 0.82rem;
+}
+.edw-panel .edw-upload-note {
+  margin: -0.4rem 0 0.9rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.edw-panel .edw-upload-note[hidden] { display: none; }
+
+.edw-section-tools .edw-danger { color: #a4342a; }
+.edw-section-tools .edw-danger:hover { background: #a4342a; border-color: #a4342a; color: #fff; }

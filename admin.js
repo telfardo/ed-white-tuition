@@ -1,17 +1,20 @@
 /* Ed White Tuition — the editor.
-   Loads on every page but does nothing at all unless you've signed in on
-   /admin.html. Edits are kept in this browser until you press Export. */
-
-var SESSION_KEY = 'edw-admin-on';
+   Loads on every page but does nothing at all unless Ed has signed in on
+   /admin.html. Edits are held in this browser until he presses Publish,
+   which writes them to Supabase and makes them live for everyone. */
 
 /* content.js announces itself when it has applied any saved overrides. Wait
    for that rather than relying on script order, which is easy to get wrong. */
-if (localStorage.getItem(SESSION_KEY) === 'yes') {
-  if (window.EDW && window.EDW.ready) {
+if (window.EDW && window.EDW.auth && window.EDW.auth.session()) {
+  if (window.EDW.ready) {
     startEditor();
   } else {
     document.addEventListener('edw:ready', startEditor, { once: true });
   }
+} else if (!window.EDW) {
+  document.addEventListener('edw:ready', function () {
+    if (window.EDW.auth.session()) startEditor();
+  }, { once: true });
 }
 
 function startEditor() {
@@ -21,7 +24,7 @@ function startEditor() {
   if (document.querySelector('.edw-bar')) return;
 
   var EDW = window.EDW;
-  var draft = EDW.draft() || { text: {}, layout: {}, hidden: {}, order: {} };
+  var draft = EDW.draft() || EDW.blank();
   var mode = null;
 
   function save() {
@@ -39,8 +42,8 @@ function startEditor() {
     '<button data-mode="layout">Photos</button>' +
     '<button data-mode="sections">Sections</button>' +
     '<span class="edw-sep"></span>' +
-    '<span class="edw-status" id="edw-status">No unsaved changes</span>' +
-    '<button class="edw-go" id="edw-export">Export</button>' +
+    '<span class="edw-status" id="edw-status">Nothing to publish</span>' +
+    '<button class="edw-go" id="edw-publish">Publish</button>' +
     '<button id="edw-reset">Undo all</button>' +
     '<button id="edw-exit">Done</button>';
   document.body.appendChild(bar);
@@ -48,12 +51,15 @@ function startEditor() {
 
   var status = bar.querySelector('#edw-status');
 
+  function countChanges() {
+    return Object.keys(draft).reduce(function (n, part) {
+      return n + Object.keys(draft[part] || {}).length;
+    }, 0);
+  }
+
   function markDirty() {
-    var n = Object.keys(draft.text).length +
-            Object.keys(draft.layout).length +
-            Object.keys(draft.hidden).length +
-            Object.keys(draft.order).length;
-    status.textContent = n ? n + ' change' + (n === 1 ? '' : 's') + ' not yet exported' : 'No unsaved changes';
+    var n = countChanges();
+    status.textContent = n ? n + ' change' + (n === 1 ? '' : 's') + ' not published yet' : 'Nothing to publish';
     status.classList.toggle('is-dirty', !!n);
   }
   markDirty();
@@ -82,7 +88,7 @@ function startEditor() {
     });
   }
 
-  /* ---------- photo size & crop ---------- */
+  /* ---------- photo size, crop & replace ---------- */
 
   var panel = null;
 
@@ -98,8 +104,10 @@ function startEditor() {
     slot.classList.add('edw-selected');
 
     var key = EDW.keyFor(slot);
-    var box = draft.layout[key] || (window.EDW_SAVED.layout || {})[key] || {};
+    var live = EDW.current();
+    var box = draft.layout[key] || live.layout[key] || {};
     var img = slot.querySelector('img');
+    var imgKey = img ? EDW.keyFor(img) : null;
 
     // Start the sliders from whatever the photo is actually showing.
     var pos = (box.position || getComputedStyle(img).objectPosition || '50% 50%').split(/\s+/);
@@ -111,6 +119,9 @@ function startEditor() {
     panel.className = 'edw-panel';
     panel.innerHTML =
       '<h4>Photo</h4>' +
+      '<label class="edw-file">Replace this photo' +
+      '<input type="file" id="edw-upload" accept="image/jpeg,image/png,image/webp,image/avif"></label>' +
+      '<p class="edw-upload-note" id="edw-upload-note" hidden></p>' +
       '<label>Size <output id="p-w">' + width + 'px</output>' +
       '<input type="range" id="edw-width" min="80" max="900" value="' + width + '"></label>' +
       '<label>Move across <output id="p-x">' + Math.round(px) + '%</output>' +
@@ -139,6 +150,26 @@ function startEditor() {
       save();
     }
 
+    var note = panel.querySelector('#edw-upload-note');
+
+    panel.querySelector('#edw-upload').addEventListener('change', function () {
+      var file = this.files && this.files[0];
+      if (!file || !imgKey) return;
+
+      note.hidden = false;
+      note.textContent = 'Uploading ' + file.name + '…';
+
+      EDW.storage.upload(file).then(function (url) {
+        draft.images[imgKey] = url;
+        img.src = url;
+        slot.classList.remove('is-empty');
+        save();
+        note.textContent = 'Uploaded. Press Publish to put it live.';
+      }).catch(function (err) {
+        note.textContent = 'Upload failed: ' + err.message;
+      });
+    });
+
     panel.querySelector('#edw-width').addEventListener('input', function () {
       slot.style.width = this.value + 'px';
       slot.style.maxWidth = '100%';
@@ -164,6 +195,7 @@ function startEditor() {
 
     panel.querySelector('#edw-clear').addEventListener('click', function () {
       delete draft.layout[key];
+      if (imgKey) delete draft.images[imgKey];
       slot.style.width = '';
       slot.style.aspectRatio = '';
       img.style.objectPosition = '';
@@ -189,7 +221,7 @@ function startEditor() {
     if (!on) closePanel();
   }
 
-  /* ---------- section order & visibility ---------- */
+  /* ---------- section order, visibility & deletion ---------- */
 
   function pageName() {
     return (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/, '');
@@ -225,7 +257,8 @@ function startEditor() {
       tools.innerHTML =
         '<button title="Move up">↑</button>' +
         '<button title="Move down">↓</button>' +
-        '<button title="Hide or show">' + (section.hasAttribute('hidden') ? 'Show' : 'Hide') + '</button>';
+        '<button title="Hide or show">' + (section.hasAttribute('hidden') ? 'Show' : 'Hide') + '</button>' +
+        '<button title="Delete for good" class="edw-danger">Delete</button>';
       section.prepend(tools);
 
       var buttons = tools.querySelectorAll('button');
@@ -251,6 +284,13 @@ function startEditor() {
           draft.hidden[key] = true;
           this.textContent = 'Show';
         }
+        save();
+      });
+
+      buttons[3].addEventListener('click', function () {
+        if (!confirm('Delete this whole section?\n\nIt disappears from the page for everyone once you publish. "Undo all" brings it back until then.')) return;
+        draft.deleted[EDW.keyFor(section)] = true;
+        section.style.display = 'none';
         save();
       });
     });
@@ -283,44 +323,46 @@ function startEditor() {
     b.addEventListener('click', function () { setMode(b.dataset.mode); });
   });
 
-  /* ---------- export ---------- */
+  /* ---------- publish ---------- */
 
-  bar.querySelector('#edw-export').addEventListener('click', function () {
-    var merged = EDW.current();
+  bar.querySelector('#edw-publish').addEventListener('click', function () {
+    var button = this;
+    if (!countChanges()) return;
 
-    fetch('content.js')
-      .then(function (r) { return r.text(); })
-      .catch(function () { return null; })
-      .then(function (original) {
-        var body = 'window.EDW_SAVED = ' + JSON.stringify(merged, null, 2) + ';';
-        var out;
+    button.disabled = true;
+    status.textContent = 'Publishing…';
 
-        if (original && original.indexOf('window.EDW_SAVED =') !== -1) {
-          out = original.replace(/window\.EDW_SAVED = [\s\S]*?\n\};/, body);
-        } else {
-          out = body;
-        }
-
-        var blob = new Blob([out], { type: 'text/javascript' });
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'content.js';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-
-        status.textContent = 'Exported — send content.js to the one and only Ned Telfer';
+    /* Re-read what is live first, so publishing from one device does not
+       quietly wipe an edit made on another. */
+    EDW.remote.load().then(function (live) {
+      var merged = EDW.blank();
+      Object.keys(merged).forEach(function (part) {
+        merged[part] = Object.assign({}, (live || {})[part], draft[part]);
       });
+      return EDW.remote.save(merged);
+    }).then(function () {
+      localStorage.removeItem(EDW.DRAFT_KEY);
+      draft = EDW.blank();
+      button.disabled = false;
+      markDirty();
+      status.textContent = 'Published — live for everyone';
+      status.classList.remove('is-dirty');
+    }).catch(function (err) {
+      button.disabled = false;
+      status.textContent = 'Could not publish: ' + err.message;
+      status.classList.add('is-dirty');
+    });
   });
 
   bar.querySelector('#edw-reset').addEventListener('click', function () {
-    if (!confirm('Throw away every change you have made in this browser?')) return;
+    if (!confirm('Throw away every change you have not published yet?')) return;
     localStorage.removeItem(EDW.DRAFT_KEY);
     location.reload();
   });
 
   bar.querySelector('#edw-exit').addEventListener('click', function () {
-    localStorage.removeItem(SESSION_KEY);
+    if (countChanges() && !confirm('You have changes that are not published yet. Leave the editor anyway?')) return;
+    EDW.auth.signOut();
     location.reload();
   });
 }

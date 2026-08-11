@@ -31,15 +31,15 @@
 
     <form id="login-form">
       <div class="field">
-        <label for="u">Username</label>
-        <input type="text" id="u" autocomplete="username" autocapitalize="none" spellcheck="false">
+        <label for="u">Email</label>
+        <input type="email" id="u" autocomplete="username" autocapitalize="none" spellcheck="false">
       </div>
       <div class="field">
         <label for="p">Password</label>
         <input type="password" id="p" autocomplete="current-password">
       </div>
-      <button type="submit" class="btn btn-primary">Sign in</button>
-      <p class="admin-error" id="err" hidden>That's not right — try again.</p>
+      <button type="submit" class="btn btn-primary" id="signin">Sign in</button>
+      <p class="admin-error" id="err" hidden></p>
     </form>
   </div>
 
@@ -50,8 +50,9 @@
     <ol class="admin-steps">
       <li><strong>Text</strong> — click any heading or paragraph and type over it.</li>
       <li><strong>Photos</strong> — click a photo to change its size, shape and which part of it shows.</li>
-      <li><strong>Sections</strong> — move whole blocks up and down the page, or hide them.</li>
-      <li><strong>Export</strong> — downloads <code>content.js</code>. Send that file on and your changes go live for everyone.</li>
+      <li><strong>Sections</strong> — move whole blocks up and down the page, hide them, or delete them.</li>
+      <li><strong>Photos</strong> — you can also upload a new photo to replace any of them.</li>
+      <li><strong>Publish</strong> — puts everything live for everyone, straight away.</li>
     </ol>
 
     <p style="margin-top:1.75rem">
@@ -61,9 +62,9 @@
     <p style="margin-top:1.25rem"><a href="#" id="signout">Sign out</a></p>
 
     <p class="admin-warn">
-      Changes are stored in this browser only. They are not live for anyone else until
-      the exported <code>content.js</code> has been added to the site — so don't clear
-      your browser data before exporting.
+      Changes stay in this browser until you press <strong>Publish</strong>. Once published
+      they are live for everyone immediately — there is nothing to send on and nothing for
+      anyone else to do.
     </p>
   </div>
 
@@ -72,34 +73,41 @@
 <script src="content.js"></script>
 <script>
 (function () {
-  var SESSION_KEY = 'edw-admin-on';
   var login = document.getElementById('login-card');
   var panel = document.getElementById('panel-card');
+  var err = document.getElementById('err');
+  var button = document.getElementById('signin');
 
   function showPanel() {
     login.hidden = true;
     panel.hidden = false;
   }
 
-  if (localStorage.getItem(SESSION_KEY) === 'yes') showPanel();
+  if (window.EDW && window.EDW.auth.session()) showPanel();
 
   document.getElementById('login-form').addEventListener('submit', function (e) {
     e.preventDefault();
-    var u = document.getElementById('u').value.trim();
-    var p = document.getElementById('p').value;
+    err.hidden = true;
+    button.disabled = true;
+    button.textContent = 'Signing in…';
 
-    if (u === 'admin' && p === 'password') {
-      localStorage.setItem(SESSION_KEY, 'yes');
-      document.getElementById('err').hidden = true;
-      showPanel();
-    } else {
-      document.getElementById('err').hidden = false;
-    }
+    window.EDW.auth.signIn(
+      document.getElementById('u').value.trim(),
+      document.getElementById('p').value
+    ).then(showPanel).catch(function (error) {
+      err.textContent = error.message === 'Invalid login credentials'
+        ? 'That email and password do not match.'
+        : error.message;
+      err.hidden = false;
+    }).then(function () {
+      button.disabled = false;
+      button.textContent = 'Sign in';
+    });
   });
 
   document.getElementById('signout').addEventListener('click', function (e) {
     e.preventDefault();
-    localStorage.removeItem(SESSION_KEY);
+    window.EDW.auth.signOut();
     location.reload();
   });
 })();
