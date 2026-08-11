@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#22201d"/>
+  <rect x="0.5" y="0.5" width="63" height="63" rx="13.5" fill="#faf7f2" stroke="#e6ded2"/>
   <text x="32" y="43"
         text-anchor="middle"
         font-family="Source Serif 4, Source Serif Pro, Georgia, Times New Roman, serif"
         font-size="30"
         letter-spacing="-1"
-        fill="#faf7f2">EW</text>
+        fill="#22201d">EW</text>
 </svg>
