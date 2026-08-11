@@ -63,7 +63,26 @@ window.EDW_SAVED = {
      Plain fetch rather than the JS SDK: this file loads on every page view,
      and the SDK is well over a hundred kilobytes to do four requests. */
 
-  function rest(path, options) {
+  /* Supabase access tokens last about an hour. Without this, an editor left
+     open over lunch starts failing every save with an error that looks like a
+     permissions problem but isn't. */
+  function refresh() {
+    var session = readJSON(TOKEN_KEY);
+    if (!session || !session.refresh_token) return Promise.resolve(null);
+
+    return fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: session.refresh_token })
+    }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (body) {
+        if (body && body.access_token) localStorage.setItem(TOKEN_KEY, JSON.stringify(body));
+        return body;
+      })
+      .catch(function () { return null; });
+  }
+
+  function rest(path, options, retried) {
     options = options || {};
     var headers = {
       apikey: SUPABASE_KEY,
@@ -77,6 +96,11 @@ window.EDW_SAVED = {
       method: options.method || 'GET',
       headers: headers,
       body: options.body
+    }).then(function (r) {
+      if (r.status !== 401 || retried || !session) return r;
+      return refresh().then(function (ok) {
+        return ok ? rest(path, options, true) : r;
+      });
     });
   }
 
@@ -97,13 +121,18 @@ window.EDW_SAVED = {
         headers: { Prefer: 'return=representation' },
         body: JSON.stringify({ data: data })
       }).then(function (r) {
+        if (r.status === 401) throw new Error('your sign-in has expired — sign out and back in');
         if (!r.ok) {
           return r.text().then(function (t) { throw new Error(t || ('HTTP ' + r.status)); });
         }
         return r.json();
       }).then(function (rows) {
+        /* An update blocked by row-level security still comes back 200, just
+           with nothing in it. That means the account is signed in but is not
+           on the editors list - a different problem from an expired session,
+           and nothing the person at the keyboard can fix. */
         if (!rows || !rows.length) {
-          throw new Error('the server refused the change — sign out and back in');
+          throw new Error('this account is not allowed to edit the site');
         }
         localStorage.setItem(CACHE_KEY, JSON.stringify(data));
         return true;

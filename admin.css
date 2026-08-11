@@ -189,3 +189,57 @@
 
 .edw-bar .edw-danger { color: #d98b7f; }
 .edw-bar .edw-danger:hover { background: #a4342a; border-color: #a4342a; color: #fff; }
+
+/* ---- in-page confirmation ---- */
+
+.edw-ask {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(34, 32, 29, 0.5);
+}
+.edw-ask-box {
+  width: min(100%, 420px);
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.6rem 1.7rem 1.4rem;
+  box-shadow: 0 18px 50px rgba(34, 32, 29, 0.3);
+}
+.edw-ask-box h3 {
+  font-family: var(--serif, Georgia, serif);
+  font-size: 1.2rem;
+  margin: 0 0 0.5rem;
+  color: #22201d;
+}
+.edw-ask-box p {
+  margin: 0 0 1.4rem;
+  font-size: 0.93rem;
+  line-height: 1.55;
+  color: #5d564e;
+}
+.edw-ask-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+.edw-ask-actions button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 100px;
+  border: 1px solid #e6ded2;
+  background: #fff;
+  color: #5d564e;
+  cursor: pointer;
+}
+.edw-ask-actions button:hover { border-color: #b8734f; color: #22201d; }
+.edw-ask-actions .edw-go {
+  background: #9c5334;
+  border-color: #9c5334;
+  color: #fff;
+}
+.edw-ask-actions .edw-go:hover { background: #86462b; color: #fff; }
