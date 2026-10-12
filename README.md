@@ -30,6 +30,10 @@ No backend. Filling it in writes a tidy message, shows it for review, then
 offers three ways out: **email** to `edchriswhite@gmail.com`, **WhatsApp** to
 `447710241930`, or copy-to-clipboard.
 
+Visitors who do not want to fill in the form can use the two quick-contact
+links above it. Those open WhatsApp or email with a short lesson enquiry ready
+to send. Keep the prefilled message in both links in `index.html` in sync.
+
 The WhatsApp link deliberately opens in the *same* tab. Opening `wa.me` in a new
 tab breaks the handoff to the WhatsApp app on iOS and dumps people on the App
 Store download page instead. That was the original bug.
