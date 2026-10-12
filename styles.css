@@ -1,4 +1,4 @@
-/* Ed White Tuition — quiet, warm, unfussy.
+/* Ed White Tuition: quiet, warm, unfussy.
    One accent colour, lots of air, no gimmicks. */
 
 :root {
@@ -141,7 +141,7 @@ img { max-width: 100%; display: block; }
 
 .hero h1 { margin-bottom: 0.65rem; }
 
-/* Small portrait sitting beside the page title — deliberately modest, and
+/* Small portrait sitting beside the page title, deliberately modest and
    square, so there's no crop to go wrong on any screen. */
 
 .hero-intro {
@@ -545,32 +545,6 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 .cta-band .btn { margin-top: 1.75rem; }
 .cta-band .btn-primary { width: auto; padding-inline: 2.4rem; }
 
-/* ---------- gallery ---------- */
-
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.1rem;
-}
-
-.gallery figure {
-  margin: 0;
-}
-
-.gallery .photo {
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--paper-warm);
-  aspect-ratio: 3 / 4;
-}
-.gallery .photo img { width: 100%; height: 100%; object-fit: cover; }
-
-.gallery .wide { grid-column: span 2; }
-.gallery .wide .photo { aspect-ratio: 3 / 2; }
-
-/* square source images sit better without a tall crop */
-.gallery .square .photo { aspect-ratio: 1 / 1; }
-
 /* ---------- student note cards (stand-ins until lesson photos exist) ---------- */
 
 .note-cards {
@@ -603,13 +577,6 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
 .note-card p {
   font-size: 0.97rem;
   color: var(--ink-soft);
-}
-
-.gallery figcaption {
-  margin-top: 0.7rem;
-  font-size: 0.88rem;
-  color: var(--ink-faint);
-  line-height: 1.5;
 }
 
 /* ---------- long-form prose ---------- */
@@ -785,8 +752,6 @@ section { padding-block: clamp(3rem, 6vw, 5rem); }
   /* Once the sidebar stacks it stops being a glanceable margin note and
      turns into a long list between the photo and the prose. */
   .credentials { display: none; }
-  .gallery .wide { grid-column: span 1; }
-  .gallery .wide .photo { aspect-ratio: 3 / 2; }
   .note-cards { grid-template-columns: 1fr; }
 
   .story.flip .story-text { order: 0; }

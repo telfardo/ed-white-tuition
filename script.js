@@ -67,7 +67,7 @@
   });
   syncReveals();
 
-  /* Pre-fill the timezone so nobody has to think about it. It's only a hint —
+  /* Pre-fill the timezone so nobody has to think about it. It's only a hint;
      the field stays editable. */
   (function prefillTimezone() {
     if (!timezoneField) return;
@@ -99,7 +99,7 @@
     var where = document.querySelector('input[name="where"]:checked');
     var lines = [];
 
-    lines.push('Hi Ed — I’d like to book a lesson.');
+    lines.push('Hi Ed, I’d like to book a lesson.');
     lines.push('');
     lines.push('Name: ' + (name || '(not given)'));
 
@@ -140,7 +140,7 @@
 
     var message = buildMessage();
     var subjects = checkedSubjects();
-    var subjectLine = 'Lesson enquiry' + (subjects.length ? ' — ' + subjects.join(', ') : '');
+    var subjectLine = 'Lesson enquiry' + (subjects.length ? ': ' + subjects.join(', ') : '');
 
     previewText.textContent = message;
 

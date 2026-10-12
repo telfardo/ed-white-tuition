@@ -1,4 +1,4 @@
-/* Ed White Tuition — the editor.
+/* Ed White Tuition: the editor.
    Loads on every page but does nothing at all unless Ed has signed in on
    /admin.html. Edits are held in this browser until he presses Publish,
    which writes them to Supabase and makes them live for everyone. */
@@ -188,7 +188,7 @@ function startEditor() {
                a gap in the page. */
             if (!el.textContent.trim() && !el.querySelector('img')) {
               removeBlock(el);
-              status.textContent = 'Empty block removed — "Discard my edits" brings it back';
+              status.textContent = 'Empty block removed. "Discard my edits" brings it back';
               return;
             }
 
@@ -420,7 +420,7 @@ function startEditor() {
       buttons[3].addEventListener('click', function () {
         var key = EDW.keyFor(section);
         var list = draft.added[key] || [];
-        var item = { id: 'a' + Date.now().toString(36), tag: 'p', html: 'New text — click to edit.' };
+        var item = { id: 'a' + Date.now().toString(36), tag: 'p', html: 'New text. Click to edit.' };
         list.push(item);
         draft.added[key] = list;
         save();
@@ -505,7 +505,7 @@ function startEditor() {
       draft = EDW.blank();
       button.disabled = false;
       markDirty();
-      status.textContent = 'Published — live for everyone';
+      status.textContent = 'Published. Live for everyone';
       status.classList.remove('is-dirty');
     }).catch(function (err) {
       button.disabled = false;
