@@ -1,4 +1,4 @@
-/* Ed White Tuition — saved content.
+/* Ed White Tuition: saved content.
    ------------------------------------------------------------------
    Ed's edits live in Supabase and are live for everyone the moment he
    presses Publish. Nothing needs committing by hand any more.
@@ -122,7 +122,7 @@ window.EDW_SAVED = {
         headers: { Prefer: 'return=representation' },
         body: JSON.stringify({ data: data })
       }).then(function (r) {
-        if (r.status === 401) throw new Error('your sign-in has expired — sign out and back in');
+        if (r.status === 401) throw new Error('your sign-in has expired. Sign out and back in');
         if (!r.ok) {
           return r.text().then(function (t) { throw new Error(t || ('HTTP ' + r.status)); });
         }
