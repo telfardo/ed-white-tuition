@@ -357,7 +357,7 @@ select {
 
 .btn-ghost {
   background: transparent;
-  color: var(--ink);
+  color: var(--ink-soft);
   border-color: var(--line);
 }
 .btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
